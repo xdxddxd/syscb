@@ -17,7 +17,8 @@ import {
   X,
   ChevronRight,
   LogOut,
-  BarChart3
+  BarChart3,
+  Calendar
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -45,6 +46,7 @@ const navigation: NavigationItem[] = [
   { name: 'Inventário', href: '/pt-BR/inventory', icon: Package, description: 'Controle de estoque' },
   { name: 'Financeiro', href: '/pt-BR/financial', icon: DollarSign, description: 'Receitas e comissões' },
   { name: 'Funcionários', href: '/pt-BR/employees', icon: Clock, description: 'Gestão de pessoal' },
+  { name: 'Escalas', href: '/pt/employees/schedule', icon: Calendar, description: 'Escala de trabalho' },
   { name: 'Relatórios', href: '/pt-BR/reports', icon: BarChart3, description: 'Análises e métricas' },
   { name: 'Configurações', href: '/pt-BR/settings', icon: Settings, description: 'Configurações do sistema' },
   { name: 'Notificações', href: '/pt-BR/notifications', icon: Bell, badge: 3, description: 'Central de avisos' },

@@ -3,23 +3,20 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-// Helper function to get employee name
-function getEmployeeName(employeeId: string): string {
-  const employees = [
-    { id: 'emp-1', name: 'Maria Santos Silva' },
-    { id: 'emp-2', name: 'João Costa Oliveira' },
-    { id: 'emp-3', name: 'Ana Oliveira Lima' },
-    { id: 'emp-4', name: 'Roberto Silva Almeida' },
-    { id: 'emp-5', name: 'Fernanda Ribeiro Costa' }
-  ];
-  
-  const employee = employees.find(emp => emp.id === employeeId);
-  return employee ? employee.name : '';
-}
-
 export async function GET() {
   try {
     const users = await prisma.user.findMany({
+      include: {
+        employee: {
+          select: {
+            id: true,
+            name: true,
+            position: true,
+            department: true,
+            creci: true
+          }
+        }
+      },
       orderBy: {
         createdAt: 'desc'
       }
@@ -33,7 +30,10 @@ export async function GET() {
       phone: user.phone,
       role: user.role,
       employeeId: user.employeeId,
-      employeeName: user.employeeId ? getEmployeeName(user.employeeId) : '',
+      employeeName: user.employee ? user.employee.name : '',
+      employeePosition: user.employee ? user.employee.position : '',
+      employeeDepartment: user.employee ? user.employee.department : '',
+      employeeCreci: user.employee ? user.employee.creci : '',
       isActive: user.isActive,
       lastLogin: user.lastLogin?.toLocaleString('pt-BR') || 'Nunca',
       createdAt: user.createdAt.toLocaleDateString('pt-BR'),
@@ -84,6 +84,17 @@ export async function POST(request: NextRequest) {
         employeeId: userData.employeeId || null,
         isActive: userData.isActive !== undefined ? userData.isActive : true,
         permissions: userData.permissions || {},
+      },
+      include: {
+        employee: {
+          select: {
+            id: true,
+            name: true,
+            position: true,
+            department: true,
+            creci: true
+          }
+        }
       }
     });
 
@@ -94,7 +105,10 @@ export async function POST(request: NextRequest) {
       phone: user.phone,
       role: user.role,
       employeeId: user.employeeId,
-      employeeName: user.employeeId ? getEmployeeName(user.employeeId) : '',
+      employeeName: user.employee ? user.employee.name : '',
+      employeePosition: user.employee ? user.employee.position : '',
+      employeeDepartment: user.employee ? user.employee.department : '',
+      employeeCreci: user.employee ? user.employee.creci : '',
       isActive: user.isActive,
       lastLogin: user.lastLogin?.toLocaleString('pt-BR') || 'Nunca',
       createdAt: user.createdAt.toLocaleDateString('pt-BR'),
@@ -157,6 +171,17 @@ export async function PUT(request: NextRequest) {
         employeeId: userData.employeeId || userExists.employeeId,
         isActive: userData.isActive !== undefined ? userData.isActive : userExists.isActive,
         permissions: userData.permissions || userExists.permissions,
+      },
+      include: {
+        employee: {
+          select: {
+            id: true,
+            name: true,
+            position: true,
+            department: true,
+            creci: true
+          }
+        }
       }
     });
 
@@ -167,7 +192,10 @@ export async function PUT(request: NextRequest) {
       phone: updatedUser.phone,
       role: updatedUser.role,
       employeeId: updatedUser.employeeId,
-      employeeName: updatedUser.employeeId ? getEmployeeName(updatedUser.employeeId) : '',
+      employeeName: updatedUser.employee ? updatedUser.employee.name : '',
+      employeePosition: updatedUser.employee ? updatedUser.employee.position : '',
+      employeeDepartment: updatedUser.employee ? updatedUser.employee.department : '',
+      employeeCreci: updatedUser.employee ? updatedUser.employee.creci : '',
       isActive: updatedUser.isActive,
       lastLogin: updatedUser.lastLogin?.toLocaleString('pt-BR') || 'Nunca',
       createdAt: updatedUser.createdAt.toLocaleDateString('pt-BR'),

@@ -26,7 +26,7 @@ model User {
   phone        String?
   role         UserRole
   branchId     String?
-  employeeId   String?  // Link to employee record (external reference for now)
+  employeeId   String?  @unique // Link to employee record
   isActive     Boolean  @default(true)
   lastLogin    DateTime?
   permissions  Json?    // Store detailed permissions as JSON
@@ -37,6 +37,7 @@ model User {
 
   // Relacionamentos
   branch       Branch?   @relation(fields: [branchId], references: [id])
+  employee     Employee? @relation(fields: [employeeId], references: [id])
   userPermissions UserPermission[]
   properties   Property[]
   leads        Lead[]
@@ -97,6 +98,7 @@ model Branch {
   financialRecords FinancialRecord[]
   transfersFrom InventoryTransfer[] @relation("FromBranch")
   transfersTo   InventoryTransfer[] @relation("ToBranch")
+  schedules     EmployeeSchedule[]
 
   @@map("branches")
 }
@@ -327,6 +329,46 @@ enum TransferStatus {
   CANCELLED
 }
 
+// Employee Schedule Management
+model EmployeeSchedule {
+  id          String           @id @default(cuid())
+  employeeId  String
+  branchId    String
+  date        DateTime         // Data específica da escala
+  startTime   String           // Ex: "08:00"
+  endTime     String           // Ex: "17:00"
+  shiftType   ShiftType        @default(REGULAR)
+  status      ScheduleStatus   @default(SCHEDULED)
+  notes       String?
+  createdBy   String           // ID do usuário que criou
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  // Relacionamentos
+  employee    Employee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  branch      Branch           @relation(fields: [branchId], references: [id])
+
+  @@unique([employeeId, date]) // Um funcionário não pode ter múltiplas escalas no mesmo dia
+  @@map("employee_schedules")
+}
+
+enum ShiftType {
+  REGULAR    // Expediente normal
+  OVERTIME   // Hora extra
+  HOLIDAY    // Feriado
+  WEEKEND    // Fim de semana
+  NIGHT      // Noturno
+  FLEXIBLE   // Horário flexível
+}
+
+enum ScheduleStatus {
+  SCHEDULED  // Agendado
+  CONFIRMED  // Confirmado pelo funcionário
+  CANCELLED  // Cancelado
+  COMPLETED  // Completado
+  NO_SHOW    // Não compareceu
+}
+
 // Employee Points System
 model EmployeeCheckIn {
   id           String   @id @default(cuid())
@@ -416,4 +458,57 @@ model MarketAnalysis {
   createdAt       DateTime     @default(now())
 
   @@map("market_analysis")
+}
+
+// Employee Management
+model Employee {
+  id               String          @id @default(cuid())
+  name             String
+  email            String          @unique
+  phone            String?
+  cpf              String          @unique
+  rg               String?
+  birthDate        DateTime?
+  address          String?
+  city             String?
+  state            String?
+  zipCode          String?
+  position         String
+  department       String
+  creci            String?         // CRECI registration for real estate agents
+  salary           Float?
+  commissionRate   Float?
+  hireDate         DateTime
+  terminationDate  DateTime?
+  status           EmployeeStatus  @default(ACTIVE)
+  managerId        String?         // Self-referencing for hierarchy
+  emergencyContact String?
+  emergencyPhone   String?
+  bankAccount      String?
+  pixKey           String?
+  notes            String?
+  photo            String?         // URL to photo
+  isActive         Boolean         @default(true)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  // Relacionamentos hierárquicos
+  manager          Employee?       @relation("EmployeeHierarchy", fields: [managerId], references: [id])
+  subordinates     Employee[]      @relation("EmployeeHierarchy")
+  
+  // Relacionamento com usuário
+  user             User?
+  
+  // Relacionamento com escalas
+  schedules        EmployeeSchedule[]
+
+  @@map("employees")
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  INACTIVE
+  TERMINATED
+  ON_LEAVE
+  PROBATION
 }

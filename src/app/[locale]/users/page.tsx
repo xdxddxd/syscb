@@ -27,14 +27,17 @@ import {
   Key
 } from 'lucide-react';
 
-// Mock data for employees to link users to
-const employees = [
-  { id: 'emp-1', name: 'Maria Santos Silva', position: 'Corretora Senior', creci: '12345-F' },
-  { id: 'emp-2', name: 'João Costa Oliveira', position: 'Corretor', creci: '67890-F' },
-  { id: 'emp-3', name: 'Ana Oliveira Lima', position: 'Gerente de Vendas', creci: '11111-F' },
-  { id: 'emp-4', name: 'Roberto Silva Almeida', position: 'Consultor', creci: '22222-F' },
-  { id: 'emp-5', name: 'Fernanda Ribeiro Costa', position: 'Corretora', creci: '33333-F' }
-];
+// Interface for employees from API
+interface Employee {
+  id: string;
+  name: string;
+  position: string;
+  department: string;
+  creci?: string;
+  email: string;
+  isActive: boolean;
+  status: string;
+}
 
 // Sistema de módulos com permissões CRUD
 const systemModules = [
@@ -66,33 +69,9 @@ export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState('Todos');
   const [users, setUsers] = useState<any[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(false);
   const [showPermissions, setShowPermissions] = useState<string | null>(null);
-  
-  // Check authentication
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, authLoading, router]);
-
-  // Check permissions for user management
-  const canManageUsers = user?.permissions?.users?.update || user?.role === 'admin';
-
-  if (authLoading) {
-    return (
-      <div className="container mx-auto p-6 flex items-center justify-center min-h-screen">
-        <div className="bg-white rounded-lg p-6 flex items-center gap-3">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-          <span>Verificando autenticação...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null; // Will redirect to login
-  }
   
   // Form states
   const [formData, setFormData] = useState<{
@@ -112,6 +91,13 @@ export default function UsersPage() {
     isActive: true,
     permissions: {}
   });
+  
+  // Check authentication
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
 
   // Initialize permissions for new user
   useEffect(() => {
@@ -132,6 +118,7 @@ export default function UsersPage() {
   // Load users on component mount
   useEffect(() => {
     loadUsers();
+    loadEmployees();
   }, []);
 
   const loadUsers = async () => {
@@ -152,6 +139,40 @@ export default function UsersPage() {
       setLoading(false);
     }
   };
+
+  const loadEmployees = async () => {
+    try {
+      const response = await fetch('/api/employees/list?active=true');
+      if (response.ok) {
+        const employeesData = await response.json();
+        setEmployees(employeesData);
+      } else {
+        console.error('Failed to load employees');
+        setEmployees([]);
+      }
+    } catch (error) {
+      console.error('Error loading employees:', error);
+      setEmployees([]);
+    }
+  };
+
+  // Check permissions for user management
+  const canManageUsers = user?.permissions?.users?.update || user?.role === 'admin';
+
+  if (authLoading) {
+    return (
+      <div className="container mx-auto p-6 flex items-center justify-center min-h-screen">
+        <div className="bg-white rounded-lg p-6 flex items-center gap-3">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+          <span>Verificando autenticação...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Will redirect to login
+  }
 
   const handlePermissionChange = (moduleId: string, permissionType: string, value: boolean) => {
     setFormData(prev => ({
@@ -438,7 +459,7 @@ export default function UsersPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Building2 className="h-4 w-4" />
-                      {user.employeeName}
+                      {user.employeeName ? `${user.employeeName} - ${user.employeePosition || ''}` : 'Não vinculado'}
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
@@ -575,10 +596,13 @@ export default function UsersPage() {
                     <option value="">Selecione um funcionário</option>
                     {employees.map((employee) => (
                       <option key={employee.id} value={employee.id}>
-                        {employee.name} - {employee.position} (CRECI: {employee.creci})
+                        {employee.name} - {employee.position} {employee.creci ? `(CRECI: ${employee.creci})` : ''}
                       </option>
                     ))}
                   </select>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Vinculação a um funcionário permite acesso aos dados de vendas e comissões
+                  </p>
                 </div>
 
                 {/* Status */}
