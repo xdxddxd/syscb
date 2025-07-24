@@ -1,0 +1,225 @@
+{
+  "app": {
+    "title": "Casa Branca Real Estate Consulting",
+    "description": "Real Estate Management System"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "properties": "Properties",
+    "leads": "Leads",
+    "contracts": "Contracts",
+    "inventory": "Inventory",
+    "employees": "Employees",
+    "financial": "Financial",
+    "reports": "Reports",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "overview": "Overview",
+    "recentActivity": "Recent Activity",
+    "quickActions": "Quick Actions",
+    "statistics": {
+      "totalProperties": "Total Properties",
+      "activeLeads": "Active Leads",
+      "closedDeals": "Closed Deals",
+      "monthlyRevenue": "Monthly Revenue"
+    }
+  },
+  "properties": {
+    "title": "Property Management",
+    "addProperty": "Add Property",
+    "editProperty": "Edit Property",
+    "propertyDetails": "Property Details",
+    "status": {
+      "available": "Available",
+      "sold": "Sold",
+      "rented": "Rented",
+      "reserved": "Reserved"
+    },
+    "type": {
+      "house": "House",
+      "apartment": "Apartment",
+      "commercial": "Commercial",
+      "land": "Land"
+    },
+    "fields": {
+      "title": "Title",
+      "description": "Description",
+      "price": "Price",
+      "address": "Address",
+      "bedrooms": "Bedrooms",
+      "bathrooms": "Bathrooms",
+      "area": "Area (m²)",
+      "photos": "Photos"
+    }
+  },
+  "leads": {
+    "title": "Lead Management",
+    "addLead": "Add Lead",
+    "editLead": "Edit Lead",
+    "leadDetails": "Lead Details",
+    "status": {
+      "new": "New",
+      "contacted": "Contacted",
+      "qualified": "Qualified",
+      "proposal": "Proposal",
+      "closed": "Closed",
+      "lost": "Lost"
+    },
+    "source": {
+      "website": "Website",
+      "social": "Social Media",
+      "referral": "Referral",
+      "advertising": "Advertising",
+      "other": "Other"
+    },
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "interest": "Interest",
+      "budget": "Budget",
+      "notes": "Notes"
+    }
+  },
+  "contracts": {
+    "title": "Contract Management",
+    "addContract": "New Contract",
+    "editContract": "Edit Contract",
+    "contractDetails": "Contract Details",
+    "signContract": "Sign Contract",
+    "status": {
+      "draft": "Draft",
+      "pending": "Pending",
+      "signed": "Signed",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "type": {
+      "sale": "Sale",
+      "rent": "Rent",
+      "management": "Management"
+    }
+  },
+  "inventory": {
+    "title": "Inventory Control",
+    "addItem": "Add Item",
+    "editItem": "Edit Item",
+    "transferItem": "Transfer Item",
+    "itemDetails": "Item Details",
+    "branches": "Branches",
+    "transfers": "Transfers",
+    "history": "History",
+    "fields": {
+      "name": "Name",
+      "description": "Description",
+      "quantity": "Quantity",
+      "location": "Location",
+      "category": "Category",
+      "value": "Value"
+    }
+  },
+  "employees": {
+    "title": "Employee Management",
+    "addEmployee": "Add Employee",
+    "editEmployee": "Edit Employee",
+    "employeeDetails": "Employee Details",
+    "pointsSystem": "Points System",
+    "checkIn": "Check-in",
+    "permissions": "Permissions",
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "role": "Role",
+      "branch": "Branch",
+      "salary": "Salary",
+      "commission": "Commission"
+    },
+    "roles": {
+      "admin": "Administrator",
+      "manager": "Manager",
+      "agent": "Agent",
+      "assistant": "Assistant"
+    }
+  },
+  "financial": {
+    "title": "Financial Dashboard",
+    "revenue": "Revenue",
+    "expenses": "Expenses",
+    "commissions": "Commissions",
+    "profit": "Profit",
+    "reports": "Reports",
+    "periods": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAsRead": "Mark as Read",
+    "markAllAsRead": "Mark All as Read",
+    "noNotifications": "No notifications",
+    "types": {
+      "info": "Info",
+      "warning": "Warning",
+      "error": "Error",
+      "success": "Success"
+    }
+  },
+  "clientPortal": {
+    "title": "Client Portal",
+    "login": "Login",
+    "myProperties": "My Properties",
+    "myContracts": "My Contracts",
+    "documents": "Documents",
+    "messages": "Messages",
+    "support": "Support"
+  },
+  "marketAnalysis": {
+    "title": "Market Analysis",
+    "priceComparison": "Price Comparison",
+    "marketTrends": "Market Trends",
+    "propertyValuation": "Property Valuation",
+    "competitorAnalysis": "Competitor Analysis"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "import": "Import",
+    "loading": "Loading...",
+    "noData": "No data found",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close"
+  },
+  "forms": {
+    "required": "Required field",
+    "invalidEmail": "Invalid email",
+    "invalidPhone": "Invalid phone",
+    "minLength": "Minimum {min} characters",
+    "maxLength": "Maximum {max} characters",
+    "invalidFormat": "Invalid format"
+  },
+  "errors": {
+    "general": "An unexpected error occurred",
+    "network": "Connection error",
+    "notFound": "Item not found",
+    "unauthorized": "Unauthorized access",
+    "forbidden": "Access denied",
+    "validation": "Validation error"
+  }
+}

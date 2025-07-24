@@ -1,0 +1,419 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// generator electric {
+//   provider    = "prisma-electric-generator"
+//   electricUrl = env("ELECTRIC_URL")
+// }
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User and Authentication
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  phone        String?
+  role         UserRole
+  branchId     String?
+  employeeId   String?  // Link to employee record (external reference for now)
+  isActive     Boolean  @default(true)
+  lastLogin    DateTime?
+  permissions  Json?    // Store detailed permissions as JSON
+  salary       Float?
+  commissionRate Float?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relacionamentos
+  branch       Branch?   @relation(fields: [branchId], references: [id])
+  userPermissions UserPermission[]
+  properties   Property[]
+  leads        Lead[]
+  contracts    Contract[]
+  checkIns     EmployeeCheckIn[]
+  notifications Notification[]
+  financialRecords FinancialRecord[]
+  transfersOut InventoryTransfer[] @relation("TransferredBy")
+  transfersIn  InventoryTransfer[] @relation("ReceivedBy")
+
+  @@map("users")
+}
+
+model UserPermission {
+  id       String @id @default(cuid())
+  userId   String
+  resource String
+  canCreate Boolean @default(false)
+  canRead   Boolean @default(true)
+  canUpdate Boolean @default(false)
+  canDelete Boolean @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, resource])
+  @@map("user_permissions")
+}
+
+enum UserRole {
+  admin
+  manager
+  user
+  ADMIN
+  MANAGER
+  AGENT
+  ASSISTANT
+}
+
+// Branch Management
+model Branch {
+  id        String   @id @default(cuid())
+  name      String
+  address   String
+  phone     String
+  email     String
+  managerId String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relacionamentos
+  users         User[]
+  properties    Property[]
+  leads         Lead[]
+  contracts     Contract[]
+  inventoryItems InventoryItem[]
+  checkIns      EmployeeCheckIn[]
+  financialRecords FinancialRecord[]
+  transfersFrom InventoryTransfer[] @relation("FromBranch")
+  transfersTo   InventoryTransfer[] @relation("ToBranch")
+
+  @@map("branches")
+}
+
+// Property Management
+model Property {
+  id          String         @id @default(cuid())
+  title       String
+  description String
+  type        PropertyType
+  status      PropertyStatus
+  price       Float
+  
+  // Address
+  street      String
+  number      String
+  complement  String?
+  neighborhood String
+  city        String
+  state       String
+  zipCode     String
+  country     String
+  latitude    Float?
+  longitude   Float?
+
+  // Details
+  area           Float
+  bedrooms       Int?
+  bathrooms      Int?
+  parkingSpaces  Int?
+  furnished      Boolean @default(false)
+  petFriendly    Boolean @default(false)
+  features       String[] // JSON array
+
+  photos      String[] // URLs for photos
+  documents   String[] // URLs for documents
+  ownerId     String?
+  agentId     String
+  branchId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relacionamentos
+  agent       User     @relation(fields: [agentId], references: [id])
+  branch      Branch   @relation(fields: [branchId], references: [id])
+  leads       Lead[]
+  contracts   Contract[]
+
+  @@map("properties")
+}
+
+enum PropertyType {
+  HOUSE
+  APARTMENT
+  COMMERCIAL
+  LAND
+}
+
+enum PropertyStatus {
+  AVAILABLE
+  SOLD
+  RENTED
+  RESERVED
+}
+
+// Lead Management
+model Lead {
+  id            String     @id @default(cuid())
+  name          String
+  email         String
+  phone         String
+  status        LeadStatus
+  source        LeadSource
+  interest      String
+  budget        Float?
+  notes         String     @default("")
+  agentId       String
+  propertyId    String?
+  branchId      String
+  lastContactAt DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  // Relacionamentos
+  agent    User      @relation(fields: [agentId], references: [id])
+  property Property? @relation(fields: [propertyId], references: [id])
+  branch   Branch    @relation(fields: [branchId], references: [id])
+
+  @@map("leads")
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  PROPOSAL
+  CLOSED
+  LOST
+}
+
+enum LeadSource {
+  WEBSITE
+  SOCIAL
+  REFERRAL
+  ADVERTISING
+  OTHER
+}
+
+// Contract Management
+model Contract {
+  id              String         @id @default(cuid())
+  type            ContractType
+  status          ContractStatus
+  propertyId      String
+  clientId        String
+  agentId         String
+  value           Float
+  commissionRate  Float
+  commissionValue Float
+  startDate       DateTime
+  endDate         DateTime?
+  signedAt        DateTime?
+  documentUrl     String?
+  eSignatureId    String?
+  branchId        String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relacionamentos
+  property Property @relation(fields: [propertyId], references: [id])
+  client   Client   @relation(fields: [clientId], references: [id])
+  agent    User     @relation(fields: [agentId], references: [id])
+  branch   Branch   @relation(fields: [branchId], references: [id])
+
+  @@map("contracts")
+}
+
+enum ContractType {
+  SALE
+  RENT
+  MANAGEMENT
+}
+
+enum ContractStatus {
+  DRAFT
+  PENDING
+  SIGNED
+  COMPLETED
+  CANCELLED
+}
+
+// Client Management
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String
+  document  String   @unique // CPF/CNPJ
+  
+  // Address
+  street      String?
+  number      String?
+  complement  String?
+  neighborhood String?
+  city        String?
+  state       String?
+  zipCode     String?
+  country     String?
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relacionamentos
+  contracts Contract[]
+
+  @@map("clients")
+}
+
+// Inventory Management
+model InventoryItem {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  category    String
+  quantity    Int
+  unitValue   Float
+  totalValue  Float
+  location    String
+  branchId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relacionamentos
+  branch    Branch              @relation(fields: [branchId], references: [id])
+  transfers InventoryTransfer[]
+
+  @@map("inventory_items")
+}
+
+model InventoryTransfer {
+  id           String         @id @default(cuid())
+  itemId       String
+  fromBranchId String
+  toBranchId   String
+  quantity     Int
+  transferredBy String
+  receivedBy   String?
+  status       TransferStatus
+  notes        String?
+  createdAt    DateTime       @default(now())
+  completedAt  DateTime?
+
+  // Relacionamentos
+  item         InventoryItem @relation(fields: [itemId], references: [id])
+  fromBranch   Branch        @relation("FromBranch", fields: [fromBranchId], references: [id])
+  toBranch     Branch        @relation("ToBranch", fields: [toBranchId], references: [id])
+  transferrer  User          @relation("TransferredBy", fields: [transferredBy], references: [id])
+  receiver     User?         @relation("ReceivedBy", fields: [receivedBy], references: [id])
+
+  @@map("inventory_transfers")
+}
+
+enum TransferStatus {
+  PENDING
+  IN_TRANSIT
+  COMPLETED
+  CANCELLED
+}
+
+// Employee Points System
+model EmployeeCheckIn {
+  id           String   @id @default(cuid())
+  employeeId   String
+  checkInTime  DateTime
+  checkOutTime DateTime?
+  latitude     Float
+  longitude    Float
+  accuracy     Float
+  selfieUrl    String
+  points       Int
+  notes        String?
+  branchId     String
+  createdAt    DateTime @default(now())
+
+  // Relacionamentos
+  employee User   @relation(fields: [employeeId], references: [id])
+  branch   Branch @relation(fields: [branchId], references: [id])
+
+  @@map("employee_checkins")
+}
+
+// Notification System
+model Notification {
+  id      String           @id @default(cuid())
+  userId  String
+  type    NotificationType
+  title   String
+  message String
+  isRead  Boolean          @default(false)
+  data    Json?
+  readAt  DateTime?
+  createdAt DateTime       @default(now())
+
+  // Relacionamentos
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+enum NotificationType {
+  INFO
+  WARNING
+  ERROR
+  SUCCESS
+}
+
+// Financial Management
+model FinancialRecord {
+  id          String         @id @default(cuid())
+  type        FinancialType
+  category    String
+  description String
+  amount      Float
+  date        DateTime
+  contractId  String?
+  employeeId  String?
+  branchId    String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  // Relacionamentos
+  employee User?   @relation(fields: [employeeId], references: [id])
+  branch   Branch  @relation(fields: [branchId], references: [id])
+
+  @@map("financial_records")
+}
+
+enum FinancialType {
+  REVENUE
+  EXPENSE
+  COMMISSION
+}
+
+// Market Analysis
+model MarketAnalysis {
+  id              String       @id @default(cuid())
+  propertyType    PropertyType
+  neighborhood    String
+  city            String
+  averagePrice    Float
+  pricePerSqm     Float
+  marketTrend     Float        // percentage change
+  competitorCount Int
+  analysisDate    DateTime
+  dataSource      String
+  createdAt       DateTime     @default(now())
+
+  @@map("market_analysis")
+}

@@ -1,0 +1,225 @@
+{
+  "app": {
+    "title": "Casa Branca Consultoría Inmobiliaria",
+    "description": "Sistema de Gestión Inmobiliaria"
+  },
+  "navigation": {
+    "dashboard": "Panel",
+    "properties": "Propiedades",
+    "leads": "Prospectos",
+    "contracts": "Contratos",
+    "inventory": "Inventario",
+    "employees": "Empleados",
+    "financial": "Financiero",
+    "reports": "Reportes",
+    "settings": "Configuraciones",
+    "logout": "Salir"
+  },
+  "dashboard": {
+    "title": "Panel de Control",
+    "overview": "Resumen",
+    "recentActivity": "Actividad Reciente",
+    "quickActions": "Acciones Rápidas",
+    "statistics": {
+      "totalProperties": "Total de Propiedades",
+      "activeLeads": "Prospectos Activos",
+      "closedDeals": "Negocios Cerrados",
+      "monthlyRevenue": "Ingresos Mensuales"
+    }
+  },
+  "properties": {
+    "title": "Gestión de Propiedades",
+    "addProperty": "Agregar Propiedad",
+    "editProperty": "Editar Propiedad",
+    "propertyDetails": "Detalles de la Propiedad",
+    "status": {
+      "available": "Disponible",
+      "sold": "Vendida",
+      "rented": "Alquilada",
+      "reserved": "Reservada"
+    },
+    "type": {
+      "house": "Casa",
+      "apartment": "Apartamento",
+      "commercial": "Comercial",
+      "land": "Terreno"
+    },
+    "fields": {
+      "title": "Título",
+      "description": "Descripción",
+      "price": "Precio",
+      "address": "Dirección",
+      "bedrooms": "Habitaciones",
+      "bathrooms": "Baños",
+      "area": "Área (m²)",
+      "photos": "Fotos"
+    }
+  },
+  "leads": {
+    "title": "Gestión de Prospectos",
+    "addLead": "Agregar Prospecto",
+    "editLead": "Editar Prospecto",
+    "leadDetails": "Detalles del Prospecto",
+    "status": {
+      "new": "Nuevo",
+      "contacted": "Contactado",
+      "qualified": "Calificado",
+      "proposal": "Propuesta",
+      "closed": "Cerrado",
+      "lost": "Perdido"
+    },
+    "source": {
+      "website": "Sitio Web",
+      "social": "Redes Sociales",
+      "referral": "Referencia",
+      "advertising": "Publicidad",
+      "other": "Otro"
+    },
+    "fields": {
+      "name": "Nombre",
+      "email": "Correo",
+      "phone": "Teléfono",
+      "interest": "Interés",
+      "budget": "Presupuesto",
+      "notes": "Notas"
+    }
+  },
+  "contracts": {
+    "title": "Gestión de Contratos",
+    "addContract": "Nuevo Contrato",
+    "editContract": "Editar Contrato",
+    "contractDetails": "Detalles del Contrato",
+    "signContract": "Firmar Contrato",
+    "status": {
+      "draft": "Borrador",
+      "pending": "Pendiente",
+      "signed": "Firmado",
+      "completed": "Completado",
+      "cancelled": "Cancelado"
+    },
+    "type": {
+      "sale": "Venta",
+      "rent": "Alquiler",
+      "management": "Administración"
+    }
+  },
+  "inventory": {
+    "title": "Control de Inventario",
+    "addItem": "Agregar Artículo",
+    "editItem": "Editar Artículo",
+    "transferItem": "Transferir Artículo",
+    "itemDetails": "Detalles del Artículo",
+    "branches": "Sucursales",
+    "transfers": "Transferencias",
+    "history": "Historial",
+    "fields": {
+      "name": "Nombre",
+      "description": "Descripción",
+      "quantity": "Cantidad",
+      "location": "Ubicación",
+      "category": "Categoría",
+      "value": "Valor"
+    }
+  },
+  "employees": {
+    "title": "Gestión de Empleados",
+    "addEmployee": "Agregar Empleado",
+    "editEmployee": "Editar Empleado",
+    "employeeDetails": "Detalles del Empleado",
+    "pointsSystem": "Sistema de Puntos",
+    "checkIn": "Registro",
+    "permissions": "Permisos",
+    "fields": {
+      "name": "Nombre",
+      "email": "Correo",
+      "phone": "Teléfono",
+      "role": "Cargo",
+      "branch": "Sucursal",
+      "salary": "Salario",
+      "commission": "Comisión"
+    },
+    "roles": {
+      "admin": "Administrador",
+      "manager": "Gerente",
+      "agent": "Agente",
+      "assistant": "Asistente"
+    }
+  },
+  "financial": {
+    "title": "Panel Financiero",
+    "revenue": "Ingresos",
+    "expenses": "Gastos",
+    "commissions": "Comisiones",
+    "profit": "Ganancia",
+    "reports": "Reportes",
+    "periods": {
+      "daily": "Diario",
+      "weekly": "Semanal",
+      "monthly": "Mensual",
+      "yearly": "Anual"
+    }
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "markAsRead": "Marcar como Leída",
+    "markAllAsRead": "Marcar Todas como Leídas",
+    "noNotifications": "Sin notificaciones",
+    "types": {
+      "info": "Información",
+      "warning": "Advertencia",
+      "error": "Error",
+      "success": "Éxito"
+    }
+  },
+  "clientPortal": {
+    "title": "Portal del Cliente",
+    "login": "Ingresar",
+    "myProperties": "Mis Propiedades",
+    "myContracts": "Mis Contratos",
+    "documents": "Documentos",
+    "messages": "Mensajes",
+    "support": "Soporte"
+  },
+  "marketAnalysis": {
+    "title": "Análisis de Mercado",
+    "priceComparison": "Comparación de Precios",
+    "marketTrends": "Tendencias del Mercado",
+    "propertyValuation": "Valoración de Propiedades",
+    "competitorAnalysis": "Análisis de la Competencia"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "view": "Ver",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "import": "Importar",
+    "loading": "Cargando...",
+    "noData": "No se encontraron datos",
+    "confirm": "Confirmar",
+    "yes": "Sí",
+    "no": "No",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "close": "Cerrar"
+  },
+  "forms": {
+    "required": "Campo requerido",
+    "invalidEmail": "Correo inválido",
+    "invalidPhone": "Teléfono inválido",
+    "minLength": "Mínimo {min} caracteres",
+    "maxLength": "Máximo {max} caracteres",
+    "invalidFormat": "Formato inválido"
+  },
+  "errors": {
+    "general": "Ocurrió un error inesperado",
+    "network": "Error de conexión",
+    "notFound": "Artículo no encontrado",
+    "unauthorized": "Acceso no autorizado",
+    "forbidden": "Acceso denegado",
+    "validation": "Error de validación"
+  }
+}

@@ -1,0 +1,225 @@
+{
+  "app": {
+    "title": "Casa Branca Consultoria Imobiliária",
+    "description": "Sistema de Gestão Imobiliária"
+  },
+  "navigation": {
+    "dashboard": "Painel",
+    "properties": "Imóveis",
+    "leads": "Leads",
+    "contracts": "Contratos",
+    "inventory": "Inventário",
+    "employees": "Funcionários",
+    "financial": "Financeiro",
+    "reports": "Relatórios",
+    "settings": "Configurações",
+    "logout": "Sair"
+  },
+  "dashboard": {
+    "title": "Painel de Controle",
+    "overview": "Visão Geral",
+    "recentActivity": "Atividade Recente",
+    "quickActions": "Ações Rápidas",
+    "statistics": {
+      "totalProperties": "Total de Imóveis",
+      "activeLeads": "Leads Ativos",
+      "closedDeals": "Negócios Fechados",
+      "monthlyRevenue": "Receita Mensal"
+    }
+  },
+  "properties": {
+    "title": "Gestão de Imóveis",
+    "addProperty": "Adicionar Imóvel",
+    "editProperty": "Editar Imóvel",
+    "propertyDetails": "Detalhes do Imóvel",
+    "status": {
+      "available": "Disponível",
+      "sold": "Vendido",
+      "rented": "Alugado",
+      "reserved": "Reservado"
+    },
+    "type": {
+      "house": "Casa",
+      "apartment": "Apartamento",
+      "commercial": "Comercial",
+      "land": "Terreno"
+    },
+    "fields": {
+      "title": "Título",
+      "description": "Descrição",
+      "price": "Preço",
+      "address": "Endereço",
+      "bedrooms": "Quartos",
+      "bathrooms": "Banheiros",
+      "area": "Área (m²)",
+      "photos": "Fotos"
+    }
+  },
+  "leads": {
+    "title": "Gestão de Leads",
+    "addLead": "Adicionar Lead",
+    "editLead": "Editar Lead",
+    "leadDetails": "Detalhes do Lead",
+    "status": {
+      "new": "Novo",
+      "contacted": "Contatado",
+      "qualified": "Qualificado",
+      "proposal": "Proposta",
+      "closed": "Fechado",
+      "lost": "Perdido"
+    },
+    "source": {
+      "website": "Site",
+      "social": "Redes Sociais",
+      "referral": "Indicação",
+      "advertising": "Publicidade",
+      "other": "Outro"
+    },
+    "fields": {
+      "name": "Nome",
+      "email": "E-mail",
+      "phone": "Telefone",
+      "interest": "Interesse",
+      "budget": "Orçamento",
+      "notes": "Observações"
+    }
+  },
+  "contracts": {
+    "title": "Gestão de Contratos",
+    "addContract": "Novo Contrato",
+    "editContract": "Editar Contrato",
+    "contractDetails": "Detalhes do Contrato",
+    "signContract": "Assinar Contrato",
+    "status": {
+      "draft": "Rascunho",
+      "pending": "Pendente",
+      "signed": "Assinado",
+      "completed": "Concluído",
+      "cancelled": "Cancelado"
+    },
+    "type": {
+      "sale": "Venda",
+      "rent": "Aluguel",
+      "management": "Administração"
+    }
+  },
+  "inventory": {
+    "title": "Controle de Inventário",
+    "addItem": "Adicionar Item",
+    "editItem": "Editar Item",
+    "transferItem": "Transferir Item",
+    "itemDetails": "Detalhes do Item",
+    "branches": "Filiais",
+    "transfers": "Transferências",
+    "history": "Histórico",
+    "fields": {
+      "name": "Nome",
+      "description": "Descrição",
+      "quantity": "Quantidade",
+      "location": "Localização",
+      "category": "Categoria",
+      "value": "Valor"
+    }
+  },
+  "employees": {
+    "title": "Gestão de Funcionários",
+    "addEmployee": "Adicionar Funcionário",
+    "editEmployee": "Editar Funcionário",
+    "employeeDetails": "Detalhes do Funcionário",
+    "pointsSystem": "Sistema de Pontos",
+    "checkIn": "Check-in",
+    "permissions": "Permissões",
+    "fields": {
+      "name": "Nome",
+      "email": "E-mail",
+      "phone": "Telefone",
+      "role": "Cargo",
+      "branch": "Filial",
+      "salary": "Salário",
+      "commission": "Comissão"
+    },
+    "roles": {
+      "admin": "Administrador",
+      "manager": "Gerente",
+      "agent": "Corretor",
+      "assistant": "Assistente"
+    }
+  },
+  "financial": {
+    "title": "Dashboard Financeiro",
+    "revenue": "Receita",
+    "expenses": "Despesas",
+    "commissions": "Comissões",
+    "profit": "Lucro",
+    "reports": "Relatórios",
+    "periods": {
+      "daily": "Diário",
+      "weekly": "Semanal",
+      "monthly": "Mensal",
+      "yearly": "Anual"
+    }
+  },
+  "notifications": {
+    "title": "Notificações",
+    "markAsRead": "Marcar como Lida",
+    "markAllAsRead": "Marcar Todas como Lidas",
+    "noNotifications": "Nenhuma notificação",
+    "types": {
+      "info": "Informação",
+      "warning": "Aviso",
+      "error": "Erro",
+      "success": "Sucesso"
+    }
+  },
+  "clientPortal": {
+    "title": "Portal do Cliente",
+    "login": "Entrar",
+    "myProperties": "Meus Imóveis",
+    "myContracts": "Meus Contratos",
+    "documents": "Documentos",
+    "messages": "Mensagens",
+    "support": "Suporte"
+  },
+  "marketAnalysis": {
+    "title": "Análise de Mercado",
+    "priceComparison": "Comparação de Preços",
+    "marketTrends": "Tendências do Mercado",
+    "propertyValuation": "Avaliação de Imóveis",
+    "competitorAnalysis": "Análise da Concorrência"
+  },
+  "common": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "view": "Visualizar",
+    "search": "Pesquisar",
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "import": "Importar",
+    "loading": "Carregando...",
+    "noData": "Nenhum dado encontrado",
+    "confirm": "Confirmar",
+    "yes": "Sim",
+    "no": "Não",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "close": "Fechar"
+  },
+  "forms": {
+    "required": "Campo obrigatório",
+    "invalidEmail": "E-mail inválido",
+    "invalidPhone": "Telefone inválido",
+    "minLength": "Mínimo de {min} caracteres",
+    "maxLength": "Máximo de {max} caracteres",
+    "invalidFormat": "Formato inválido"
+  },
+  "errors": {
+    "general": "Ocorreu um erro inesperado",
+    "network": "Erro de conexão",
+    "notFound": "Item não encontrado",
+    "unauthorized": "Acesso não autorizado",
+    "forbidden": "Acesso negado",
+    "validation": "Erro de validação"
+  }
+}
