@@ -287,7 +287,7 @@ EmployeeSchedule  # Escalas de trabalho
 
 ## 📄 Licença
 
-Este projeto é proprietário da Casa Branca Consultoria Imobiliária.
+Este projeto é proprietário de [Derik](https://github.com/xdxddxd).
 
 ---
 
