@@ -8,13 +8,19 @@ Sistema completo de gestão imobiliária desenvolvido com Next.js, TypeScript e 
 - [x] **Autenticação JWT**: Sistema de login/logout com cookies seguros
 - [x] **Gestão de Funcionários**: CRUD completo de funcionários
 - [x] **Dashboard de Funcionários**: Métricas, estatísticas e visualização de dados
-- [x] **Sistema de Escalas**: Gerenciamento de horários de trabalho por funcionário
+- [x] **Sistema de Escalas Avançado**: Gerenciamento completo de horários com FullCalendar
+  - [x] **Visualização em Calendário**: Interface moderna com FullCalendar.js v6.1.18
+  - [x] **Preview de Dia**: Visualização de todas as escalas do dia selecionado
+  - [x] **Sistema de Exclusão**: Exclusão individual e em lote com confirmação inline
+  - [x] **Replicação Mensal**: Criar escalas para múltiplos dias do mês
+  - [x] **Status Dinâmicos**: Controle de status com cores e badges
+  - [x] **Tipos de Turno**: Sistema completo de turnos (Regular, Hora Extra, Feriado, etc.)
 - [x] **Navegação**: Menu lateral responsivo com todas as seções
-- [x] **Internacionalização**: Estrutura preparada para múltiplos idiomas
+- [x] **Internacionalização**: Estrutura preparada para múltiplos idiomas (pt-BR implementado)
 - [x] **Banco de Dados**: Schema Prisma com relacionamentos complexos
 - [x] **API REST**: Endpoints completos para funcionários e escalas
 - [x] **Interface Responsiva**: Design mobile-first com Tailwind CSS
-- [x] **Componentes UI**: Biblioteca shadcn/ui integrada
+- [x] **Componentes UI**: Biblioteca shadcn/ui integrada com componentes customizados
 
 ### 🔄 Em Desenvolvimento
 - [ ] **Gestão de Imóveis**: CRUD de propriedades e galeria de fotos
@@ -54,8 +60,12 @@ Sistema completo de gestão imobiliária desenvolvido com Next.js, TypeScript e 
   - *Por que?* Utility-first, bundle size otimizado, design system consistente
 - **shadcn/ui**
   - *Por que?* Componentes acessíveis, customizáveis e construídos com Radix UI
+- **FullCalendar.js v6.1.18**
+  - *Por que?* Biblioteca moderna para calendários, altamente customizável, suporte a React
 - **Lucide React**
   - *Por que?* Ícones modernos, otimizados e tree-shakable
+- **date-fns**
+  - *Por que?* Manipulação de datas tree-shakable, melhor que Moment.js, localização pt-BR
 
 ### State Management
 - **TanStack Query**
@@ -73,7 +83,9 @@ Sistema completo de gestão imobiliária desenvolvido com Next.js, TypeScript e 
 - **ESLint + Prettier**
   - *Por que?* Padronização de código, detecção precoce de bugs
 - **date-fns**
-  - *Por que?* Manipulação de datas tree-shakable, melhor que Moment.js
+  - *Por que?* Manipulação de datas tree-shakable, melhor que Moment.js, localização pt-BR
+- **FullCalendar.js**
+  - *Por que?* Calendário moderno, interativo, responsivo e altamente customizável
 
 ## 📋 Funcionalidades Detalhadas
 
@@ -85,12 +97,22 @@ Sistema completo de gestão imobiliária desenvolvido com Next.js, TypeScript e 
 - Busca por nome, cargo ou email
 - Sistema de hierarchy (supervisor/subordinado)
 
-### 📅 Sistema de Escalas (✅ Implementado)
-- Visualização em calendário semanal
-- Criação de escalas por funcionário
-- Tipos de turno (MORNING, AFTERNOON, NIGHT)
-- Status de escala (SCHEDULED, CONFIRMED, COMPLETED, NO_SHOW)
-- Interface intuitiva com modais
+### 📅 Sistema de Escalas (✅ Implementado - Versão Avançada)
+- **Calendário FullCalendar**: Visualização moderna e interativa
+- **Interface Intuitiva**: Criação de escalas através de modal avançado
+- **Preview de Dia**: Visualização de todas as escalas do dia selecionado
+- **Sistema de Exclusão Inteligente**:
+  - Exclusão individual com confirmação inline no próprio card
+  - Exclusão em lote de todas as escalas de uma data
+  - Confirmações visuais com feedback em tempo real
+- **Tipos de Turno Avançados**:
+  - REGULAR (Regular), OVERTIME (Hora Extra), HOLIDAY (Feriado)
+  - WEEKEND (Fim de Semana), NIGHT (Noturno), FLEXIBLE (Flexível)
+- **Status Dinâmicos**: SCHEDULED, CONFIRMED, CANCELLED, COMPLETED, NO_SHOW
+- **Replicação Mensal**: Criar escalas para múltiplos dias com seletor visual
+- **Indicadores Visuais**: Alertas para dias com alta demanda (5+ funcionários)
+- **Responsivo**: Interface adaptada para desktop e mobile
+- **Localização pt-BR**: Datas, horários e textos em português brasileiro
 
 ### 🔐 Autenticação & Autorização (✅ Implementado)
 - Login/logout com JWT
@@ -101,8 +123,13 @@ Sistema completo de gestão imobiliária desenvolvido com Next.js, TypeScript e 
 ### 🎨 Interface & UX (✅ Implementado)
 - Design responsivo mobile-first
 - Tema dark/light (estrutura preparada)
-- Componentes acessíveis
+- Componentes acessíveis com shadcn/ui
 - Loading states e feedback visual
+- **Sistema de Confirmação Inline**: UX aprimorada para ações destrutivas
+- **Preview em Tempo Real**: Visualização instantânea de alterações
+- **Indicadores Visuais**: Badges coloridos para status e tipos
+- **Animações Suaves**: Transições e hover effects
+- **Calendário Interativo**: Interface moderna com FullCalendar
 
 ## 📦 Instalação e Configuração
 
@@ -163,18 +190,21 @@ src/
 ├── app/
 │   ├── [locale]/               # Rotas internacionalizadas
 │   │   ├── employees/          # Páginas de funcionários
-│   │   │   ├── schedule/       # Sistema de escalas
+│   │   │   ├── schedule/       # Sistema de escalas com FullCalendar
 │   │   │   ├── new/            # Criar funcionário
 │   │   │   └── [id]/           # Detalhes/edição
 │   │   └── layout.tsx          # Layout principal
 │   ├── api/                    # API Routes
 │   │   ├── auth/               # Autenticação
 │   │   ├── employees/          # CRUD funcionários
-│   │   └── schedules/          # CRUD escalas
-│   └── globals.css             # Estilos globais
+│   │   └── schedules/          # CRUD escalas com exclusão
+│   └── globals.css             # Estilos globais + FullCalendar
 ├── components/
 │   ├── ui/                     # Componentes base (shadcn/ui)
 │   ├── layout/                 # Componentes de layout
+│   ├── schedule/               # Componentes específicos de escalas
+│   │   ├── ScheduleCalendarSimple.tsx  # Calendário FullCalendar
+│   │   └── ScheduleModal.tsx           # Modal avançado de escalas
 │   └── forms/                  # Componentes de formulários
 ├── context/                    # React Context APIs
 ├── lib/                        # Configurações e utilitários
@@ -209,6 +239,8 @@ bun prisma studio         # Interface visual
 
 # Utilitários
 bun db:seed               # Popula banco com dados exemplo
+bun db:reset              # Reset completo do banco
+bun calendar:test         # Testa funcionalidades do calendário
 ```
 
 ## 🎯 Como Usar
@@ -225,9 +257,16 @@ bun db:seed               # Popula banco com dados exemplo
 - **Escalas**: Gerencie horários de trabalho
 
 ### 3. Sistema de Escalas
-- **Visualização Semanal**: Veja escalas em formato calendário
-- **Criar Escala**: Defina horários por funcionário
-- **Gerenciar Status**: Confirme, complete ou marque faltas
+- **Calendário FullCalendar**: Visualização interativa e moderna
+- **Criar Escala**: Modal avançado com preview e replicação mensal
+- **Visualizar Escalas do Dia**: Preview de todas as escalas ao selecionar uma data
+- **Gerenciar Status**: Confirme, complete ou marque faltas com sistema visual
+- **Exclusão Inteligente**: 
+  - Exclua escalas individuais com confirmação inline
+  - Exclua todas as escalas de uma data específica
+- **Tipos de Turno**: Sistema completo com 6 tipos diferentes
+- **Replicação**: Crie escalas para múltiplos dias do mês
+- **Indicadores**: Alertas visuais para dias com alta demanda
 
 ## 🧪 Banco de Dados
 
@@ -251,7 +290,8 @@ EmployeeSchedule  # Escalas de trabalho
 1. **Gestão de Imóveis**: CRUD completo de propriedades
 2. **Upload de Arquivos**: Sistema de galeria para imóveis
 3. **CRM Básico**: Gestão de leads e clientes
-4. **Dashboard Financeiro**: Relatórios de comissões
+4. **Escalas Automáticas**: IA para sugestão de escalas otimizadas
+5. **Dashboard Financeiro**: Relatórios de comissões
 
 ### Médio Prazo
 1. **Sistema de Contratos**: Criação e gestão
