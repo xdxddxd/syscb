@@ -1,50 +1,290 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Plus, 
   Search, 
   Filter, 
-  Phone, 
-  Mail, 
-  MapPin, 
-  Calendar,
-  TrendingUp,
   Users,
-  Star,
-  Clock
+  TrendingUp,
+  Calendar,
+  Clock,
+  LayoutGrid,
+  List,
+  RefreshCw,
+  Download
 } from 'lucide-react';
+import { KanbanBoard } from '@/components/crm/KanbanBoard';
+import { LeadModal } from '@/components/crm/LeadModal';
+import { LeadCard } from '@/components/crm/LeadCard';
 
-const clientStages = [
-  { name: 'Lead', count: 45, color: 'bg-blue-500' },
-  { name: 'Interessado', count: 23, color: 'bg-yellow-500' },
-  { name: 'Proposta', count: 12, color: 'bg-orange-500' },
-  { name: 'Negociação', count: 8, color: 'bg-purple-500' },
-  { name: 'Fechado', count: 15, color: 'bg-green-500' },
-];
+interface Lead {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  status: string;
+  source: string;
+  interest: string;
+  budget?: number;
+  notes: string;
+  createdAt: string;
+  lastContactAt?: string;
+  agent: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  property?: {
+    id: string;
+    title: string;
+    type: string;
+    price: number;
+    neighborhood: string;
+    city: string;
+  };
+  branch: {
+    id: string;
+    name: string;
+  };
+}
+
+interface Employee {
+  id: string;
+  name: string;
+  position: string;
+  department: string;
+}
+
+interface Property {
+  id: string;
+  title: string;
+  type: string;
+  price: number;
+  neighborhood: string;
+  city: string;
+}
 
 export default function ClientsPage() {
-  const [selectedStage, setSelectedStage] = useState('Todos');
+  const { user } = useAuth();
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [stats, setStats] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(true);
+  const [showLeadModal, setShowLeadModal] = useState(false);
+  const [editingLead, setEditingLead] = useState<Lead | null>(null);
+  const [initialStatus, setInitialStatus] = useState<string>('');
+  const [view, setView] = useState<'kanban' | 'list'>('kanban');
+  const [filters, setFilters] = useState({
+    search: '',
+    status: 'all',
+    agentId: 'all',
+    source: 'all'
+  });
+
+  useEffect(() => {
+    if (user) {
+      loadData();
+    }
+  }, [user]);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      
+      const params = new URLSearchParams({
+        limit: '100',
+        ...(filters.status !== 'all' && { status: filters.status }),
+        ...(filters.agentId !== 'all' && { agentId: filters.agentId }),
+        ...(filters.search && { search: filters.search })
+      });
+
+      const [leadsRes, employeesRes, propertiesRes] = await Promise.all([
+        fetch(`/api/leads?${params}`, { credentials: 'include' }),
+        fetch('/api/employees?limit=100', { credentials: 'include' }),
+        fetch('/api/properties?limit=100', { credentials: 'include' }).catch(() => ({ ok: false }))
+      ]);
+
+      if (!leadsRes.ok || !employeesRes.ok) {
+        throw new Error('Erro ao carregar dados');
+      }
+
+      const [leadsData, employeesData] = await Promise.all([
+        leadsRes.json(),
+        employeesRes.json()
+      ]);
+
+      // Properties API pode não existir ainda, então vamos usar dados mock
+      const propertiesData = { properties: [] };
+
+      setLeads(leadsData.leads || []);
+      setStats(leadsData.stats?.byStatus || {});
+      setEmployees(employeesData.employees || []);
+      setProperties(propertiesData.properties || []);
+      
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateLead = (status: string = 'NEW') => {
+    setEditingLead(null);
+    setInitialStatus(status);
+    setShowLeadModal(true);
+  };
+
+  const handleEditLead = (lead: Lead) => {
+    setEditingLead(lead);
+    setInitialStatus('');
+    setShowLeadModal(true);
+  };
+
+  const handleSaveLead = async (leadData: any) => {
+    try {
+      const url = editingLead ? `/api/leads/${editingLead.id}` : '/api/leads';
+      const method = editingLead ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(leadData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao salvar lead');
+      }
+
+      await loadData();
+      setShowLeadModal(false);
+      setEditingLead(null);
+    } catch (error) {
+      console.error('Erro ao salvar lead:', error);
+      alert('Erro ao salvar lead');
+    }
+  };
+
+  const handleDeleteLead = async (leadId: string) => {
+    if (!confirm('Tem certeza que deseja excluir este lead?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/leads/${leadId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao excluir lead');
+      }
+
+      await loadData();
+    } catch (error) {
+      console.error('Erro ao excluir lead:', error);
+      alert('Erro ao excluir lead');
+    }
+  };
+
+  const handleStatusChange = async (leadId: string, newStatus: string) => {
+    try {
+      const lead = leads.find(l => l.id === leadId);
+      if (!lead) return;
+
+      const response = await fetch(`/api/leads/${leadId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          ...lead,
+          status: newStatus
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao atualizar status');
+      }
+
+      await loadData();
+    } catch (error) {
+      console.error('Erro ao atualizar status:', error);
+      alert('Erro ao atualizar status');
+    }
+  };
+
+  const filteredLeads = leads.filter(lead => {
+    if (filters.search) {
+      const search = filters.search.toLowerCase();
+      if (!lead.name.toLowerCase().includes(search) &&
+          !lead.email.toLowerCase().includes(search) &&
+          !lead.phone.includes(search) &&
+          !lead.interest.toLowerCase().includes(search)) {
+        return false;
+      }
+    }
+    
+    if (filters.status !== 'all' && lead.status !== filters.status) {
+      return false;
+    }
+    
+    if (filters.agentId !== 'all' && lead.agent.id !== filters.agentId) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const totalLeads = leads.length;
+  const hotLeads = leads.filter(lead => lead.budget && lead.budget > 500000).length;
+  const conversionRate = stats.NEW && stats.NEW > 0 ? Math.round(((stats.CLOSED || 0) / stats.NEW) * 100) : 0;
+  const totalValue = leads.reduce((sum, lead) => sum + (lead.budget || 0), 0);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <RefreshCw className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">CRM - Clientes</h1>
+          <h1 className="text-3xl font-bold tracking-tight">CRM - Pipeline de Vendas</h1>
           <p className="text-muted-foreground">
-            Gerencie leads, prospects e pipeline de vendas
+            Gerencie leads, acompanhe conversões e feche mais negócios
           </p>
         </div>
-        <Button className="w-fit">
-          <Plus className="mr-2 h-4 w-4" />
-          Novo Cliente
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={loadData}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Atualizar
+          </Button>
+          <Button variant="outline">
+            <Download className="mr-2 h-4 w-4" />
+            Exportar
+          </Button>
+          <Button onClick={() => handleCreateLead()}>
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Lead
+          </Button>
+        </div>
       </div>
 
       {/* Métricas Rápidas */}
@@ -54,8 +294,8 @@ export default function ClientsPage() {
             <div className="flex items-center">
               <Users className="h-8 w-8 text-blue-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Total Clientes</p>
-                <p className="text-2xl font-bold">103</p>
+                <p className="text-sm font-medium text-muted-foreground">Total Leads</p>
+                <p className="text-2xl font-bold">{totalLeads}</p>
               </div>
             </div>
           </CardContent>
@@ -67,7 +307,7 @@ export default function ClientsPage() {
               <TrendingUp className="h-8 w-8 text-green-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-muted-foreground">Taxa Conversão</p>
-                <p className="text-2xl font-bold">14.6%</p>
+                <p className="text-2xl font-bold">{conversionRate}%</p>
               </div>
             </div>
           </CardContent>
@@ -78,8 +318,8 @@ export default function ClientsPage() {
             <div className="flex items-center">
               <Calendar className="h-8 w-8 text-purple-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Novos (30d)</p>
-                <p className="text-2xl font-bold">28</p>
+                <p className="text-sm font-medium text-muted-foreground">Hot Leads</p>
+                <p className="text-2xl font-bold">{hotLeads}</p>
               </div>
             </div>
           </CardContent>
@@ -90,151 +330,143 @@ export default function ClientsPage() {
             <div className="flex items-center">
               <Clock className="h-8 w-8 text-orange-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Pendentes</p>
-                <p className="text-2xl font-bold">12</p>
+                <p className="text-sm font-medium text-muted-foreground">Valor Pipeline</p>
+                <p className="text-2xl font-bold">R$ {(totalValue / 1000000).toFixed(1)}M</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Pipeline Visual */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Pipeline de Vendas</CardTitle>
-          <CardDescription>Visualização do funil de conversão</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
-            {clientStages.map((stage) => (
-              <div
-                key={stage.name}
-                className={`flex-1 p-4 rounded-lg border cursor-pointer transition-all hover:scale-105 ${
-                  selectedStage === stage.name ? 'ring-2 ring-primary' : ''
-                }`}
-                onClick={() => setSelectedStage(stage.name)}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">{stage.name}</h3>
-                    <p className="text-2xl font-bold">{stage.count}</p>
-                  </div>
-                  <div className={`w-3 h-3 rounded-full ${stage.color}`} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Filtros */}
       <Card>
         <CardContent className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
             <div>
-              <Input placeholder="Buscar por nome, email, telefone..." />
+              <Input 
+                placeholder="Buscar por nome, email, telefone..."
+                value={filters.search}
+                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                className="w-full"
+              />
             </div>
+            
             <div>
-              <select className="w-full h-10 px-3 rounded-md border border-input bg-background">
-                <option>Todos os estágios</option>
-                <option>Lead</option>
-                <option>Interessado</option>
-                <option>Proposta</option>
-                <option>Negociação</option>
-                <option>Fechado</option>
-              </select>
+              <Select value={filters.status} onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os status</SelectItem>
+                  <SelectItem value="NEW">Novos</SelectItem>
+                  <SelectItem value="CONTACTED">Contatados</SelectItem>
+                  <SelectItem value="QUALIFIED">Qualificados</SelectItem>
+                  <SelectItem value="PROPOSAL">Proposta</SelectItem>
+                  <SelectItem value="CLOSED">Fechados</SelectItem>
+                  <SelectItem value="LOST">Perdidos</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+            
             <div>
-              <select className="w-full h-10 px-3 rounded-md border border-input bg-background">
-                <option>Todos os consultores</option>
-                <option>João Silva</option>
-                <option>Maria Santos</option>
-                <option>Pedro Costa</option>
-              </select>
+              <Select value={filters.agentId} onValueChange={(value) => setFilters(prev => ({ ...prev, agentId: value }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Consultor" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os consultores</SelectItem>
+                  {employees
+                    .filter(employee => employee.id && employee.id.trim() !== '')
+                    .map(employee => (
+                      <SelectItem key={employee.id} value={employee.id}>
+                        {employee.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
             </div>
+            
             <div>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" onClick={loadData} className="w-full">
                 <Filter className="mr-2 h-4 w-4" />
-                Filtrar
+                Aplicar Filtros
               </Button>
+            </div>
+
+            <div>
+              <div className="flex gap-1">
+                <Button
+                  variant={view === 'kanban' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setView('kanban')}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={view === 'list' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setView('list')}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Lista de Clientes */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {[1, 2, 3, 4, 5, 6].map((item) => (
-          <Card key={item} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-start space-x-4">
-                <Avatar className="h-12 w-12">
-                  <AvatarFallback>JS</AvatarFallback>
-                </Avatar>
-                
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-semibold">João Silva Santos</h3>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="secondary">Interessado</Badge>
-                        <div className="flex items-center">
-                          <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                          <span className="text-xs text-muted-foreground ml-1">Hot Lead</span>
-                        </div>
-                      </div>
-                    </div>
-                    <span className="text-xs text-muted-foreground">2 dias atrás</span>
-                  </div>
-                  
-                  <div className="space-y-1 text-sm text-muted-foreground">
-                    <div className="flex items-center">
-                      <Mail className="mr-2 h-4 w-4" />
-                      joao.silva@email.com
-                    </div>
-                    <div className="flex items-center">
-                      <Phone className="mr-2 h-4 w-4" />
-                      (11) 99999-9999
-                    </div>
-                    <div className="flex items-center">
-                      <MapPin className="mr-2 h-4 w-4" />
-                      Interessado em: Casa - Jardim Europa
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between pt-2">
-                    <span className="text-sm text-muted-foreground">
-                      Consultor: Maria Santos
-                    </span>
-                    <div className="flex space-x-2">
-                      <Button variant="outline" size="sm">
-                        <Phone className="h-4 w-4" />
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Mail className="h-4 w-4" />
-                      </Button>
-                      <Button size="sm">Ver Detalhes</Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Conteúdo Principal */}
+      {view === 'kanban' ? (
+        <KanbanBoard
+          leads={filteredLeads}
+          stats={stats}
+          onEditLead={handleEditLead}
+          onDeleteLead={handleDeleteLead}
+          onStatusChange={handleStatusChange}
+          onCreateLead={handleCreateLead}
+        />
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {filteredLeads.length === 0 ? (
+            <div className="col-span-2 text-center py-12">
+              <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Nenhum lead encontrado</h3>
+              <p className="text-muted-foreground mb-4">
+                Comece criando seu primeiro lead ou ajuste os filtros
+              </p>
+              <Button onClick={() => handleCreateLead()}>
+                <Plus className="mr-2 h-4 w-4" />
+                Criar Primeiro Lead
+              </Button>
+            </div>
+          ) : (
+            filteredLeads.map((lead) => (
+              <LeadCard
+                key={lead.id}
+                lead={lead}
+                onEdit={handleEditLead}
+                onDelete={handleDeleteLead}
+                onStatusChange={handleStatusChange}
+              />
+            ))
+          )}
+        </div>
+      )}
 
-      {/* Paginação */}
-      <div className="flex items-center justify-center space-x-2">
-        <Button variant="outline" size="sm" disabled>
-          Anterior
-        </Button>
-        <Button variant="outline" size="sm">1</Button>
-        <Button variant="outline" size="sm">2</Button>
-        <Button variant="outline" size="sm">3</Button>
-        <Button variant="outline" size="sm">
-          Próximo
-        </Button>
-      </div>
+      {/* Modal de Lead */}
+      <LeadModal
+        isOpen={showLeadModal}
+        onClose={() => {
+          setShowLeadModal(false);
+          setEditingLead(null);
+        }}
+        onSave={handleSaveLead}
+        lead={editingLead}
+        initialStatus={initialStatus}
+        employees={employees}
+        properties={properties}
+        loading={loading}
+      />
     </div>
   );
 }
