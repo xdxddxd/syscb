@@ -101,7 +101,7 @@ export function ScheduleModal({
   const [replicateToMonth, setReplicateToMonth] = useState(false);
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [showDaySelector, setShowDaySelector] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
   const [scheduleToDelete, setScheduleToDelete] = useState<string | null>(null);
 
   useEffect(() => {
@@ -165,15 +165,19 @@ export function ScheduleModal({
   const handleDeleteDate = () => {
     if (formData.date && onDeleteDate) {
       onDeleteDate(formData.date);
-      setShowDeleteConfirm(false);
+      setShowDeleteAllConfirm(false);
       onClose();
     }
   };
 
-  const handleDeleteClick = () => {
+  const handleDeleteAllClick = () => {
     if (daySchedules.length > 0) {
-      setShowDeleteConfirm(true);
+      setShowDeleteAllConfirm(true);
     }
+  };
+
+  const handleCancelDeleteAll = () => {
+    setShowDeleteAllConfirm(false);
   };
 
   const handleDeleteScheduleClick = (scheduleId: string) => {
@@ -393,16 +397,39 @@ export function ScheduleModal({
                         <span className="text-xs text-muted-foreground">
                           {daySchedules.length} escala(s)
                         </span>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={handleDeleteClick}
-                          className="flex items-center gap-1 hover:scale-105 transition-transform"
-                          title={`Excluir todas as ${daySchedules.length} escalas desta data`}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                          Excluir Todas
-                        </Button>
+                        {showDeleteAllConfirm ? (
+                          <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                            <span className="text-xs text-red-700 font-medium">Confirmar exclusão?</span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleCancelDeleteAll}
+                              className="h-6 px-2 text-xs text-gray-600 hover:text-gray-800 border-gray-300"
+                            >
+                              Cancelar
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={handleDeleteDate}
+                              className="h-6 px-2 text-xs flex items-center gap-1"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                              Confirmar
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={handleDeleteAllClick}
+                            className="flex items-center gap-1 hover:scale-105 transition-transform"
+                            title={`Excluir todas as ${daySchedules.length} escalas desta data`}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                            Excluir Todas
+                          </Button>
+                        )}
                       </div>
                     )}
                   </div>
@@ -675,54 +702,6 @@ export function ScheduleModal({
           </Button>
         </div>
       </DialogContent>
-
-      {/* Modal de Confirmação de Exclusão */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                <Trash2 className="h-5 w-5 text-red-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">Confirmar Exclusão</h3>
-                <p className="text-sm text-gray-600">
-                  Esta ação não pode ser desfeita
-                </p>
-              </div>
-            </div>
-            
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-              <p className="text-sm text-red-800">
-                <strong>Você está prestes a excluir todas as escalas do dia:</strong>
-              </p>
-              <p className="text-sm text-red-700 font-medium mt-1">
-                {formData.date && format(new Date(formData.date), 'dd/MM/yyyy', { locale: ptBR })}
-              </p>
-              <p className="text-sm text-red-700 mt-2">
-                Total de escalas que serão excluídas: <strong>{daySchedules.length}</strong>
-              </p>
-            </div>
-
-            <div className="flex justify-end gap-3">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowDeleteConfirm(false)}
-              >
-                Cancelar
-              </Button>
-              <Button 
-                variant="destructive" 
-                onClick={handleDeleteDate}
-                className="flex items-center gap-2"
-              >
-                <Trash2 className="h-4 w-4" />
-                Confirmar Exclusão
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </Dialog>
   );
 }
