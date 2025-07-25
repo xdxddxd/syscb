@@ -141,11 +141,21 @@ export default function EmployeeSchedulePage() {
     if (!date) return [];
     
     const targetDate = date.toISOString().split('T')[0]; // YYYY-MM-DD
+    console.log('🔍 Debug getDaySchedules:', {
+      clickedDate: date,
+      targetDate,
+      totalSchedules: schedules.length,
+      scheduleDates: schedules.map(s => ({ id: s.id, date: s.date, dateOnly: s.date.split('T')[0] }))
+    });
     
-    return schedules.filter(schedule => {
+    const filteredSchedules = schedules.filter(schedule => {
       const scheduleDate = schedule.date.split('T')[0]; // Extract YYYY-MM-DD part
       return scheduleDate === targetDate;
     });
+    
+    console.log('✅ Filtered schedules for date:', targetDate, filteredSchedules);
+    
+    return filteredSchedules;
   };
 
   const handleDeleteDate = async (date: string) => {

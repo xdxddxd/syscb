@@ -119,9 +119,15 @@ export function ScheduleModal({
       setReplicateToMonth(false);
       setSelectedDays([]);
     } else if (selectedDate) {
+      const dateString = selectedDate.toISOString().split('T')[0];
+      console.log('🔍 Debug Modal useEffect:', {
+        selectedDate,
+        dateString,
+        daySchedules: daySchedules.length
+      });
       setFormData(prev => ({
         ...prev,
-        date: format(selectedDate, 'yyyy-MM-dd'),
+        date: dateString,
         employeeId: '',
         branchId: '',
         shiftType: 'REGULAR',
@@ -131,15 +137,27 @@ export function ScheduleModal({
       setReplicateToMonth(false);
       setSelectedDays([]);
     }
-  }, [schedule, selectedDate, isOpen]);
+  }, [schedule, selectedDate, isOpen, daySchedules.length]);
 
   useEffect(() => {
     if (replicateToMonth && formData.date) {
-      const startDate = new Date(formData.date);
-      const endDate = endOfMonth(startDate);
-      const days = eachDayOfInterval({ start: startDate, end: endDate });
-      setSelectedDays(days.map(day => format(day, 'yyyy-MM-dd')));
-      setShowDaySelector(true);
+      try {
+        const startDate = new Date(formData.date + 'T12:00:00');
+        if (isNaN(startDate.getTime())) {
+          setSelectedDays([]);
+          setShowDaySelector(false);
+          return;
+        }
+        
+        const endDate = endOfMonth(startDate);
+        const days = eachDayOfInterval({ start: startDate, end: endDate });
+        setSelectedDays(days.map(day => format(day, 'yyyy-MM-dd')));
+        setShowDaySelector(true);
+      } catch (error) {
+        console.error('Erro ao calcular dias do mês:', error);
+        setSelectedDays([]);
+        setShowDaySelector(false);
+      }
     } else {
       setSelectedDays([]);
       setShowDaySelector(false);
@@ -198,12 +216,35 @@ export function ScheduleModal({
   const selectedEmployee = employees.find(emp => emp.id === formData.employeeId);
   const selectedBranch = branches.find(branch => branch.id === formData.branchId);
 
+  const formatDateSafely = (dateString: string): string => {
+    if (!dateString) return 'Data não selecionada';
+    try {
+      // Verificar se a data está no formato correto (YYYY-MM-DD)
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        return dateString;
+      }
+      const date = new Date(dateString + 'T12:00:00');
+      if (isNaN(date.getTime())) {
+        return dateString;
+      }
+      return format(date, 'dd/MM/yyyy', { locale: ptBR });
+    } catch {
+      return dateString;
+    }
+  };
+
   const getDaysInMonth = () => {
     if (!formData.date) return [];
     
-    const startDate = new Date(formData.date);
-    const endDate = endOfMonth(startDate);
-    return eachDayOfInterval({ start: startDate, end: endDate });
+    try {
+      const startDate = new Date(formData.date + 'T12:00:00');
+      if (isNaN(startDate.getTime())) return [];
+      
+      const endDate = endOfMonth(startDate);
+      return eachDayOfInterval({ start: startDate, end: endDate });
+    } catch {
+      return [];
+    }
   };
 
   return (
@@ -273,10 +314,10 @@ export function ScheduleModal({
                 <div>
                   <Label htmlFor="date">Data</Label>
                   <Input
-                  id="date"
-                  type="date"
-                  value={formData.date ? format(new Date(formData.date), 'yyyy-MM-dd') : ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                    id="date"
+                    type="date"
+                    value={formData.date || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
                   />
                 </div>
 
@@ -384,7 +425,7 @@ export function ScheduleModal({
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
-                      Escalas do Dia: {format(new Date(formData.date), 'dd/MM/yyyy', { locale: ptBR })}
+                      Escalas do Dia: {formatDateSafely(formData.date)}
                       {daySchedules.length > 5 && (
                         <div className="flex items-center gap-1 ml-2">
                           <AlertTriangle className="h-4 w-4 text-amber-500" />
@@ -617,7 +658,7 @@ export function ScheduleModal({
 
                     {formData.date && (
                       <div className="text-sm">
-                        <strong>Data:</strong> {format(new Date(formData.date), 'dd/MM/yyyy', { locale: ptBR })}
+                        <strong>Data:</strong> {formatDateSafely(formData.date)}
                       </div>
                     )}
 
