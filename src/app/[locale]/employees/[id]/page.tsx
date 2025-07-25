@@ -120,7 +120,7 @@ export default function EmployeeDetailsPage({ params }: { params: { id: string }
 
       setSuccess('Funcionário excluído com sucesso');
       setTimeout(() => {
-        router.push('/pt/employees');
+        router.push('/pt-BR/employees');
       }, 2000);
     } catch (error: any) {
       setError(error.message);
@@ -187,7 +187,7 @@ export default function EmployeeDetailsPage({ params }: { params: { id: string }
           </div>
           <div className="mt-6">
             <Link
-              href="/pt/employees"
+              href="/pt-BR/employees"
               className="inline-flex items-center text-blue-600 hover:text-blue-800"
             >
               <ArrowLeftIcon className="h-5 w-5 mr-2" />
@@ -210,7 +210,7 @@ export default function EmployeeDetailsPage({ params }: { params: { id: string }
         <div className="mb-8">
           <div className="flex items-center space-x-4 mb-4">
             <Link
-              href="/pt/employees"
+              href="/pt-BR/employees"
               className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
             >
               <ArrowLeftIcon className="h-5 w-5 mr-2" />
@@ -234,7 +234,7 @@ export default function EmployeeDetailsPage({ params }: { params: { id: string }
             
             <div className="flex items-center space-x-3">
               <Link
-                href={`/pt/employees/${employee.id}/edit`}
+                href={`/pt-BR/employees/${employee.id}/edit`}
                 className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 <PencilIcon className="h-4 w-4 mr-2" />

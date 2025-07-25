@@ -15,74 +15,6 @@ interface BranchState {
   getBranchById: (id: string) => Branch | undefined;
 }
 
-// Mock data
-const mockBranches: Branch[] = [
-  {
-    id: 'branch-1',
-    name: 'Matriz São Paulo',
-    code: 'SP001',
-    address: {
-      street: 'Av. Paulista',
-      number: '1000',
-      complement: 'Sala 100',
-      neighborhood: 'Bela Vista',
-      city: 'São Paulo',
-      state: 'SP',
-      zipCode: '01310-100',
-      country: 'Brasil'
-    },
-    contact: {
-      phone: '(11) 3456-7890',
-      email: 'sp@empresa.com.br',
-      website: 'www.empresa.com.br'
-    },
-    manager: {
-      id: 'user-1',
-      name: 'João Silva',
-      email: 'joao.silva@empresa.com.br'
-    },
-    isActive: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
-    settings: {
-      timezone: 'America/Sao_Paulo',
-      currency: 'BRL',
-      language: 'pt-BR'
-    }
-  },
-  {
-    id: 'branch-2',
-    name: 'Filial Rio de Janeiro',
-    code: 'RJ001',
-    address: {
-      street: 'Av. Copacabana',
-      number: '500',
-      neighborhood: 'Copacabana',
-      city: 'Rio de Janeiro',
-      state: 'RJ',
-      zipCode: '22070-011',
-      country: 'Brasil'
-    },
-    contact: {
-      phone: '(21) 2345-6789',
-      email: 'rj@empresa.com.br'
-    },
-    manager: {
-      id: 'user-2',
-      name: 'Maria Santos',
-      email: 'maria.santos@empresa.com.br'
-    },
-    isActive: true,
-    createdAt: '2024-02-01T10:00:00Z',
-    updatedAt: '2024-02-01T10:00:00Z',
-    settings: {
-      timezone: 'America/Sao_Paulo',
-      currency: 'BRL',
-      language: 'pt-BR'
-    }
-  }
-];
-
 export const useBranchStore = create<BranchState>((set, get) => ({
   branches: [],
   loading: false,
@@ -91,64 +23,99 @@ export const useBranchStore = create<BranchState>((set, get) => ({
   fetchBranches: async () => {
     set({ loading: true, error: null });
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      set({ branches: mockBranches, loading: false });
-    } catch (error) {
-      set({ error: 'Erro ao carregar filiais', loading: false });
+      const response = await fetch('/api/branches', {
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao carregar filiais');
+      }
+
+      const data = await response.json();
+      set({ branches: data.branches, loading: false });
+    } catch (error: any) {
+      set({ error: error.message || 'Erro ao carregar filiais', loading: false });
     }
   },
 
   addBranch: async (branchData: BranchFormData) => {
     set({ loading: true, error: null });
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const newBranch: Branch = {
-        ...branchData,
-        id: `branch-${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+      const response = await fetch('/api/branches', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(branchData)
+      });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao criar filial');
+      }
+
+      const newBranch = await response.json();
       set(state => ({
         branches: [...state.branches, newBranch],
         loading: false
       }));
-    } catch (error) {
-      set({ error: 'Erro ao criar filial', loading: false });
+    } catch (error: any) {
+      set({ error: error.message || 'Erro ao criar filial', loading: false });
+      throw error;
     }
   },
 
   updateBranch: async (id: string, branchData: Partial<BranchFormData>) => {
     set({ loading: true, error: null });
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      const response = await fetch(`/api/branches/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(branchData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao atualizar filial');
+      }
+
+      const updatedBranch = await response.json();
       set(state => ({
         branches: state.branches.map(branch =>
-          branch.id === id
-            ? { ...branch, ...branchData, updatedAt: new Date().toISOString() }
-            : branch
+          branch.id === id ? updatedBranch : branch
         ),
         loading: false
       }));
-    } catch (error) {
-      set({ error: 'Erro ao atualizar filial', loading: false });
+    } catch (error: any) {
+      set({ error: error.message || 'Erro ao atualizar filial', loading: false });
+      throw error;
     }
   },
 
   deleteBranch: async (id: string) => {
     set({ loading: true, error: null });
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      const response = await fetch(`/api/branches/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao excluir filial');
+      }
+
       set(state => ({
         branches: state.branches.filter(branch => branch.id !== id),
         loading: false
       }));
-    } catch (error) {
-      set({ error: 'Erro ao excluir filial', loading: false });
+    } catch (error: any) {
+      set({ error: error.message || 'Erro ao excluir filial', loading: false });
+      throw error;
     }
   },
 

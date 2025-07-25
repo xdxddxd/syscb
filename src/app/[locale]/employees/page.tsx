@@ -264,7 +264,7 @@ export default function EmployeesPage() {
             Gerencie equipe, performance e desenvolvimento profissional
           </p>
         </div>
-        <Link href="/pt/employees/new">
+        <Link href="/pt-BR/employees/new">
           <Button className="w-fit">
             <Plus className="mr-2 h-4 w-4" />
             Novo Funcionário
@@ -469,7 +469,7 @@ export default function EmployeesPage() {
                 : 'Comece adicionando um novo funcionário.'}
             </p>
             {!search && !selectedDepartment && !status && (
-              <Link href="/pt/employees/new" className="mt-4 inline-block">
+              <Link href="/pt-BR/employees/new" className="mt-4 inline-block">
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
                   Adicionar Funcionário
@@ -506,12 +506,12 @@ export default function EmployeesPage() {
                             </div>
                           </div>
                           <div className="flex space-x-1">
-                            <Link href={`/pt/employees/${employee.id}`}>
+                            <Link href={`/pt-BR/employees/${employee.id}`}>
                               <Button variant="ghost" size="sm">
                                 <Eye className="h-4 w-4" />
                               </Button>
                             </Link>
-                            <Link href={`/pt/employees/${employee.id}/edit`}>
+                            <Link href={`/pt-BR/employees/${employee.id}/edit`}>
                               <Button variant="ghost" size="sm">
                                 <Edit className="h-4 w-4" />
                               </Button>

@@ -1,0 +1,138 @@
+/* Custom styles for FullCalendar */
+
+/* Garantir que os eventos sejam visíveis */
+.fc-event {
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  background: white !important;
+  color: #000 !important;
+  font-size: 12px !important;
+  min-height: 20px !important;
+  padding: 2px !important;
+  margin: 1px !important;
+  border-radius: 4px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.fc-event:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+/* Estilo para eventos em diferentes visualizações */
+.fc-daygrid-event {
+  margin: 1px 0 !important;
+  padding: 2px 4px !important;
+}
+
+.fc-timegrid-event {
+  padding: 4px !important;
+  margin: 1px !important;
+}
+
+.fc-list-event {
+  padding: 8px !important;
+}
+
+/* Custom event classes por status */
+.event-status-scheduled {
+  border-left: 4px solid #6b7280 !important;
+}
+
+.event-status-confirmed {
+  border-left: 4px solid #10b981 !important;
+}
+
+.event-status-cancelled {
+  border-left: 4px solid #ef4444 !important;
+  opacity: 0.7;
+}
+
+.event-status-completed {
+  border-left: 4px solid #059669 !important;
+}
+
+.event-status-no_show {
+  border-left: 4px solid #dc2626 !important;
+  opacity: 0.7;
+}
+
+/* Garantir que o texto seja legível */
+.fc-event-title,
+.fc-event-time {
+  color: #111827 !important;
+  font-weight: 500 !important;
+}
+
+.fc-event-title {
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+}
+
+/* Estilo para more links */
+.fc-more-link {
+  color: #3b82f6 !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+}
+
+/* Ajustes para visualização em lista */
+.fc-list-event-title {
+  color: #111827 !important;
+  font-weight: 500 !important;
+}
+
+.fc-list-event-time {
+  color: #6b7280 !important;
+  font-weight: 500 !important;
+}
+
+/* Ajustes para células de dia */
+.fc-daygrid-day-number {
+  color: #374151 !important;
+  font-weight: 600 !important;
+}
+
+.fc-day-today {
+  background-color: #eff6ff !important;
+}
+
+.fc-day-today .fc-daygrid-day-number {
+  color: #1d4ed8 !important;
+  font-weight: 700 !important;
+}
+
+/* Ajustes para header de tempo */
+.fc-timegrid-slot-label {
+  color: #6b7280 !important;
+  font-size: 11px !important;
+}
+
+/* Ajustes para weekend */
+.fc-day-sat,
+.fc-day-sun {
+  background-color: #f9fafb !important;
+}
+
+/* Customização para eventos customizados */
+.custom-event {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.custom-event:hover {
+  z-index: 10 !important;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .fc-event {
+    font-size: 10px !important;
+    min-height: 18px !important;
+    padding: 1px 2px !important;
+  }
+  
+  .fc-event-title {
+    font-size: 10px !important;
+  }
+}

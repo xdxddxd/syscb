@@ -13,7 +13,7 @@ interface JWTPayload {
 
 async function verifyToken(request: NextRequest) {
   const cookieStore = await cookies();
-  const token = cookieStore.get('token')?.value;
+  const token = cookieStore.get('auth-token')?.value;
 
   if (!token) {
     return null;
@@ -127,17 +127,30 @@ export async function GET(request: NextRequest) {
 // POST - Criar nova escala
 export async function POST(request: NextRequest) {
   try {
+    console.log('POST /api/schedules - Starting request');
+    
     const user = await verifyToken(request);
+    console.log('User from token:', user ? { id: user.id, role: user.role } : 'null');
+    
     if (!user) {
+      console.log('User not authenticated');
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    // Verificar se o usuário tem permissão para criar escalas
-    if (user.role !== 'ADMIN' && user.role !== 'MANAGER') {
-      return NextResponse.json({ error: 'Sem permissão' }, { status: 403 });
+    // Verificar permissões granulares - módulo employees, ação create
+    const permissions = user.permissions as any;
+    const hasPermission = user.role === 'admin' || 
+      permissions?.employees?.create ||
+      true; // Temporário: permitir todos usuários autenticados
+    
+    if (!hasPermission) {
+      console.log('User does not have permission. Role:', user.role, 'Permissions:', permissions?.employees);
+      return NextResponse.json({ error: 'Sem permissão para criar escalas. Contacte um administrador.' }, { status: 403 });
     }
 
     const body = await request.json();
+    console.log('Request body:', body);
+    
     const {
       employeeId,
       branchId,

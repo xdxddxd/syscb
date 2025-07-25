@@ -1,11 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
+
+interface JWTPayload {
+  userId: string;
+  email: string;
+  role: string;
+}
+
+async function verifyToken(request: NextRequest) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('auth-token')?.value;
+
+  if (!token) {
+    return null;
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JWTPayload;
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      include: { employee: true }
+    });
+    return user;
+  } catch (error) {
+    return null;
+  }
+}
 
 // GET - List all employees with filters and pagination
 export async function GET(request: NextRequest) {
   try {
+    const user = await verifyToken(request);
+    if (!user) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');

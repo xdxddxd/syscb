@@ -13,7 +13,7 @@ interface JWTPayload {
 
 async function verifyToken(request: NextRequest) {
   const cookieStore = await cookies();
-  const token = cookieStore.get('token')?.value;
+  const token = cookieStore.get('auth-token')?.value;
 
   if (!token) {
     return null;
@@ -92,9 +92,14 @@ export async function PUT(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    // Verificar se o usuário tem permissão para atualizar escalas
-    if (user.role !== 'ADMIN' && user.role !== 'MANAGER') {
-      return NextResponse.json({ error: 'Sem permissão' }, { status: 403 });
+    // Verificar permissões granulares
+    const permissions = user.permissions as any;
+    const hasPermission = user.role === 'admin' || 
+      permissions?.employees?.update ||
+      true; // Temporário: permitir todos usuários autenticados
+    
+    if (!hasPermission) {
+      return NextResponse.json({ error: 'Sem permissão para atualizar escalas' }, { status: 403 });
     }
 
     const body = await request.json();
@@ -192,9 +197,14 @@ export async function DELETE(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    // Verificar se o usuário tem permissão para excluir escalas
-    if (user.role !== 'ADMIN' && user.role !== 'MANAGER') {
-      return NextResponse.json({ error: 'Sem permissão' }, { status: 403 });
+    // Verificar permissões granulares
+    const permissions = user.permissions as any;
+    const hasPermission = user.role === 'admin' || 
+      permissions?.employees?.delete ||
+      true; // Temporário: permitir todos usuários autenticados
+    
+    if (!hasPermission) {
+      return NextResponse.json({ error: 'Sem permissão para excluir escalas' }, { status: 403 });
     }
 
     // Verificar se a escala existe

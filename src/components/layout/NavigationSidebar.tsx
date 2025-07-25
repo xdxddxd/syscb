@@ -37,7 +37,7 @@ interface NavigationItem {
 }
 
 const navigation: NavigationItem[] = [
-  { name: 'Dashboard', href: '/pt-BR', icon: Home, description: 'Visão geral do sistema' },
+  { name: 'Dashboard', href: '/pt', icon: Home, description: 'Visão geral do sistema' },
   { name: 'Usuários', href: '/pt-BR/users', icon: Users, description: 'Gestão de usuários' },
   { name: 'Filiais', href: '/pt-BR/branches', icon: Building2, description: 'Gestão de filiais' },
   { name: 'Imóveis', href: '/pt-BR/properties', icon: Building2, description: 'Gestão de propriedades' },
@@ -46,7 +46,7 @@ const navigation: NavigationItem[] = [
   { name: 'Inventário', href: '/pt-BR/inventory', icon: Package, description: 'Controle de estoque' },
   { name: 'Financeiro', href: '/pt-BR/financial', icon: DollarSign, description: 'Receitas e comissões' },
   { name: 'Funcionários', href: '/pt-BR/employees', icon: Clock, description: 'Gestão de pessoal' },
-  { name: 'Escalas', href: '/pt/employees/schedule', icon: Calendar, description: 'Escala de trabalho' },
+  { name: 'Escalas', href: '/pt-BR/employees/schedule', icon: Calendar, description: 'Escala de trabalho' },
   { name: 'Relatórios', href: '/pt-BR/reports', icon: BarChart3, description: 'Análises e métricas' },
   { name: 'Configurações', href: '/pt-BR/settings', icon: Settings, description: 'Configurações do sistema' },
   { name: 'Notificações', href: '/pt-BR/notifications', icon: Bell, badge: 3, description: 'Central de avisos' },

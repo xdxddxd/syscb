@@ -1,0 +1,118 @@
+/* FullCalendar Custom Styles */
+.fc {
+  font-family: inherit;
+}
+
+/* Eventos */
+.fc-event {
+  border: none !important;
+  border-radius: 4px !important;
+  padding: 2px 4px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  margin-bottom: 1px !important;
+}
+
+.fc-event-title {
+  font-weight: 500 !important;
+  color: inherit !important;
+}
+
+.fc-event-time {
+  font-weight: 400 !important;
+  font-size: 11px !important;
+}
+
+/* Células do calendário */
+.fc-daygrid-day {
+  background: #ffffff !important;
+}
+
+.fc-daygrid-day:hover {
+  background: #f8fafc !important;
+}
+
+.fc-day-today {
+  background: #eff6ff !important;
+}
+
+/* Headers */
+.fc-col-header-cell {
+  background: #f1f5f9 !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.fc-daygrid-day-number {
+  color: #64748b !important;
+  font-weight: 500 !important;
+  padding: 8px !important;
+}
+
+/* Bordas */
+.fc-scrollgrid {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.fc-scrollgrid-sync-table {
+  border: none !important;
+}
+
+/* Força a exibição dos eventos */
+.fc-daygrid-event {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  margin: 1px 0 !important;
+  border-radius: 3px !important;
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+  padding: 1px 3px !important;
+}
+
+.fc-event-main {
+  display: block !important;
+  color: inherit !important;
+}
+
+/* Time Grid */
+.fc-timegrid-event {
+  border-radius: 4px !important;
+  border: none !important;
+  padding: 2px 4px !important;
+}
+
+.fc-timegrid-slot {
+  border-color: #e2e8f0 !important;
+}
+
+/* Lista */
+.fc-list-event {
+  cursor: pointer !important;
+}
+
+.fc-list-event:hover {
+  background: #f8fafc !important;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .fc-event {
+    font-size: 10px !important;
+    padding: 1px 2px !important;
+  }
+  
+  .fc-daygrid-event {
+    font-size: 10px !important;
+  }
+}
+
+/* Debug - força visibilidade */
+.fc-event, .fc-daygrid-event, .fc-timegrid-event {
+  min-height: 18px !important;
+  background-color: #3b82f6 !important;
+  border-color: #2563eb !important;
+  color: white !important;
+}

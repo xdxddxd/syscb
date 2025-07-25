@@ -230,7 +230,7 @@ export default function EditEmployeePage({ params }: { params: { id: string } })
 
       setSuccess('Funcionário atualizado com sucesso!');
       setTimeout(() => {
-        router.push(`/pt/employees/${params.id}`);
+        router.push(`/pt-BR/employees/${params.id}`);
       }, 2000);
     } catch (error: any) {
       setError(error.message);
@@ -290,7 +290,7 @@ export default function EditEmployeePage({ params }: { params: { id: string } })
           </div>
           <div className="mt-6">
             <Link
-              href="/pt/employees"
+              href="/pt-BR/employees"
               className="inline-flex items-center text-blue-600 hover:text-blue-800"
             >
               <ArrowLeftIcon className="h-5 w-5 mr-2" />
@@ -309,7 +309,7 @@ export default function EditEmployeePage({ params }: { params: { id: string } })
         <div className="mb-8">
           <div className="flex items-center space-x-4">
             <Link
-              href={`/pt/employees/${params.id}`}
+              href={`/pt-BR/employees/${params.id}`}
               className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
             >
               <ArrowLeftIcon className="h-5 w-5 mr-2" />
@@ -686,7 +686,7 @@ export default function EditEmployeePage({ params }: { params: { id: string } })
             {/* Submit Buttons */}
             <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
               <Link
-                href={`/pt/employees/${params.id}`}
+                href={`/pt-BR/employees/${params.id}`}
                 className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Cancelar

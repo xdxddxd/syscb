@@ -3,34 +3,23 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
-  Calendar as CalendarIcon,
   Plus, 
-  Search, 
   Filter, 
   Users, 
-  Clock, 
-  MapPin,
-  Edit,
-  Trash2,
+  Building,
   AlertTriangle,
   CheckCircle,
-  Eye,
-  ChevronLeft,
-  ChevronRight,
-  Building
+  RefreshCw
 } from 'lucide-react';
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, addWeeks, subWeeks } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { ScheduleCalendar } from '@/components/schedule/ScheduleCalendarSimple';
+import { ScheduleModal } from '@/components/schedule/ScheduleModal';
+import { DebugSchedule } from '@/components/schedule/DebugSchedule';
 
 interface Employee {
   id: string;
@@ -69,28 +58,16 @@ export default function EmployeeSchedulePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [scheduleToDelete, setScheduleToDelete] = useState<Schedule | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Modal states
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   
   // Filters
-  const [selectedEmployee, setSelectedEmployee] = useState('');
-  const [selectedBranch, setSelectedBranch] = useState('');
-  const [currentWeek, setCurrentWeek] = useState(new Date());
-  const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
-  
-  // Create form
-  const [newSchedule, setNewSchedule] = useState({
-    employeeId: '',
-    branchId: '',
-    date: new Date(),
-    startTime: '08:00',
-    endTime: '17:00',
-    shiftType: 'REGULAR' as const,
-    notes: ''
-  });
+  const [selectedEmployee, setSelectedEmployee] = useState('all');
+  const [selectedBranch, setSelectedBranch] = useState('all');
+  const [viewMode, setViewMode] = useState<'month' | 'week' | 'day' | 'list'>('month');
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -102,21 +79,23 @@ export default function EmployeeSchedulePage() {
     if (user) {
       loadData();
     }
-  }, [user, currentWeek, selectedEmployee, selectedBranch]);
+  }, [user, selectedEmployee, selectedBranch]);
 
   const loadData = async () => {
     try {
       setLoading(true);
       
-      // Calculate week range
-      const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
-      const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 1 });
+      // Buscar dados de um período mais amplo para mostrar todas as escalas
+      const startDate = new Date();
+      startDate.setMonth(startDate.getMonth() - 1); // 1 mês atrás
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + 2); // 2 meses à frente
       
       const params = new URLSearchParams({
-        startDate: weekStart.toISOString().split('T')[0],
-        endDate: weekEnd.toISOString().split('T')[0],
-        ...(selectedEmployee && { employeeId: selectedEmployee }),
-        ...(selectedBranch && { branchId: selectedBranch })
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0],
+        ...(selectedEmployee && selectedEmployee !== 'all' && { employeeId: selectedEmployee }),
+        ...(selectedBranch && selectedBranch !== 'all' && { branchId: selectedBranch })
       });
 
       const [schedulesRes, employeesRes, branchesRes] = await Promise.all([
@@ -138,6 +117,11 @@ export default function EmployeeSchedulePage() {
       setSchedules(schedulesData.schedules || []);
       setEmployees(employeesData.employees || []);
       setBranches(branchesData.branches || []);
+      
+      // Debug: Log dos dados carregados
+      console.log('Loaded schedules:', schedulesData.schedules);
+      console.log('Loaded employees:', employeesData.employees);
+      console.log('Loaded branches:', branchesData.branches);
     } catch (error) {
       console.error('Error loading data:', error);
       setError('Erro ao carregar dados');
@@ -146,51 +130,62 @@ export default function EmployeeSchedulePage() {
     }
   };
 
-  const handleCreateSchedule = async () => {
-    try {
-      setIsCreating(true);
-      setError('');
+  const handleDateClick = (date: Date) => {
+    setSelectedDate(date);
+    setSelectedSchedule(null);
+    setShowScheduleModal(true);
+  };
 
-      const response = await fetch('/api/schedules', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          ...newSchedule,
-          date: newSchedule.date.toISOString().split('T')[0]
-        })
+  // Função para obter escalas do dia selecionado
+  const getDaySchedules = (date: Date): Schedule[] => {
+    if (!date) return [];
+    
+    const targetDate = date.toISOString().split('T')[0]; // YYYY-MM-DD
+    
+    return schedules.filter(schedule => {
+      const scheduleDate = schedule.date.split('T')[0]; // Extract YYYY-MM-DD part
+      return scheduleDate === targetDate;
+    });
+  };
+
+  const handleDeleteDate = async (date: string) => {
+    try {
+      // Buscar todas as escalas da data específica
+      const schedulesToDelete = schedules.filter(schedule => {
+        const scheduleDate = schedule.date.split('T')[0];
+        return scheduleDate === date;
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erro ao criar escala');
+      if (schedulesToDelete.length === 0) {
+        setError('Nenhuma escala encontrada para esta data');
+        return;
       }
 
-      setSuccess('Escala criada com sucesso!');
-      setShowCreateModal(false);
-      setNewSchedule({
-        employeeId: '',
-        branchId: '',
-        date: new Date(),
-        startTime: '08:00',
-        endTime: '17:00',
-        shiftType: 'REGULAR',
-        notes: ''
-      });
+      // Excluir todas as escalas da data
+      const deletePromises = schedulesToDelete.map(schedule => 
+        fetch(`/api/schedules/${schedule.id}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        })
+      );
+
+      const responses = await Promise.all(deletePromises);
+      const failedResponses = responses.filter(r => !r.ok);
+
+      if (failedResponses.length > 0) {
+        throw new Error(`Erro ao excluir ${failedResponses.length} escala(s)`);
+      }
+
+      setSuccess(`${schedulesToDelete.length} escala(s) excluída(s) com sucesso!`);
       loadData();
     } catch (error: any) {
       setError(error.message);
-    } finally {
-      setIsCreating(false);
     }
   };
 
-  const handleDeleteSchedule = async () => {
-    if (!scheduleToDelete) return;
-
+  const handleDeleteSchedule = async (scheduleId: string) => {
     try {
-      setIsDeleting(true);
-      const response = await fetch(`/api/schedules/${scheduleToDelete.id}`, {
+      const response = await fetch(`/api/schedules/${scheduleId}`, {
         method: 'DELETE',
         credentials: 'include'
       });
@@ -200,50 +195,98 @@ export default function EmployeeSchedulePage() {
         throw new Error(errorData.error || 'Erro ao excluir escala');
       }
 
-      setSuccess('Escala excluída com sucesso');
-      setShowDeleteModal(false);
-      setScheduleToDelete(null);
+      setSuccess('Escala excluída com sucesso!');
       loadData();
     } catch (error: any) {
       setError(error.message);
-    } finally {
-      setIsDeleting(false);
     }
   };
 
-  const getShiftTypeLabel = (type: string) => {
-    const types = {
-      REGULAR: 'Regular',
-      OVERTIME: 'Hora Extra',
-      HOLIDAY: 'Feriado',
-      WEEKEND: 'Fim de Semana',
-      NIGHT: 'Noturno',
-      FLEXIBLE: 'Flexível'
-    };
-    return types[type as keyof typeof types] || type;
+  const handleEventClick = (schedule: Schedule) => {
+    setSelectedSchedule(schedule);
+    setSelectedDate(new Date(schedule.date));
+    setShowScheduleModal(true);
   };
 
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      SCHEDULED: { variant: 'secondary' as const, label: 'Agendado' },
-      CONFIRMED: { variant: 'default' as const, label: 'Confirmado' },
-      CANCELLED: { variant: 'destructive' as const, label: 'Cancelado' },
-      COMPLETED: { variant: 'default' as const, label: 'Concluído' },
-      NO_SHOW: { variant: 'destructive' as const, label: 'Faltou' }
-    };
-    return statusConfig[status as keyof typeof statusConfig] || statusConfig.SCHEDULED;
+  const handleEventDrop = async (scheduleId: string, newDate: Date) => {
+    try {
+      const schedule = schedules.find(s => s.id === scheduleId);
+      if (!schedule) return;
+
+      const response = await fetch(`/api/schedules/${scheduleId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          ...schedule,
+          date: newDate.toISOString().split('T')[0]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao mover escala');
+      }
+
+      setSuccess('Escala movida com sucesso!');
+      loadData();
+    } catch (error: any) {
+      setError(error.message);
+    }
   };
 
-  const getSchedulesForDay = (date: Date) => {
-    return schedules.filter(schedule => 
-      isSameDay(new Date(schedule.date), date)
-    );
-  };
+  const handleModalSubmit = async (formData: any, replicateToMonth: boolean, selectedDays: string[]) => {
+    try {
+      const isEditing = !!selectedSchedule;
+      
+      if (replicateToMonth && selectedDays.length > 0) {
+        // Criar múltiplas escalas para os dias selecionados
+        const promises = selectedDays.map(day => {
+          const scheduleDate = new Date(day);
+          return fetch('/api/schedules', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              ...formData,
+              date: scheduleDate.toISOString().split('T')[0]
+            })
+          });
+        });
+        
+        const responses = await Promise.all(promises);
+        const failedResponses = responses.filter(r => !r.ok);
+        
+        if (failedResponses.length > 0) {
+          throw new Error(`Erro ao criar ${failedResponses.length} escala(s)`);
+        }
+        
+        setSuccess(`${selectedDays.length} escala(s) criada(s) com sucesso!`);
+      } else {
+        // Criar/editar uma única escala
+        const url = isEditing ? `/api/schedules/${selectedSchedule.id}` : '/api/schedules';
+        const method = isEditing ? 'PUT' : 'POST';
 
-  const weekDays = eachDayOfInterval({
-    start: startOfWeek(currentWeek, { weekStartsOn: 1 }),
-    end: endOfWeek(currentWeek, { weekStartsOn: 1 })
-  });
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Erro ao salvar escala');
+        }
+
+        setSuccess(isEditing ? 'Escala atualizada com sucesso!' : 'Escala criada com sucesso!');
+      }
+      
+      setShowScheduleModal(false);
+      loadData();
+    } catch (error: any) {
+      setError(error.message);
+    }
+  };
 
   if (isLoading || loading) {
     return (
@@ -264,13 +307,19 @@ export default function EmployeeSchedulePage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Escala de Funcionários</h1>
           <p className="text-muted-foreground">
-            Gerencie horários e escalas da equipe
+            Gerencie horários e escalas da equipe com visualização avançada
           </p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nova Escala
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={loadData}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Atualizar
+          </Button>
+          <Button onClick={() => handleDateClick(new Date())}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nova Escala
+          </Button>
+        </div>
       </div>
 
       {/* Alerts */}
@@ -305,162 +354,18 @@ export default function EmployeeSchedulePage() {
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
-              <SelectTrigger>
-                <SelectValue placeholder="Todos os funcionários" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">Todos os funcionários</SelectItem>
-                {employees.map(emp => (
-                  <SelectItem key={emp.id} value={emp.id}>
-                    {emp.name} - {emp.position}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-              <SelectTrigger>
-                <SelectValue placeholder="Todas as filiais" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">Todas as filiais</SelectItem>
-                {branches.map(branch => (
-                  <SelectItem key={branch.id} value={branch.id}>
-                    {branch.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <div className="flex space-x-2">
-              <Button 
-                variant="outline" 
-                onClick={() => setCurrentWeek(subWeeks(currentWeek, 1))}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => setCurrentWeek(addWeeks(currentWeek, 1))}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-
-            <Button 
-              variant="outline" 
-              onClick={() => setCurrentWeek(new Date())}
-            >
-              Semana Atual
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Week Header */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-center">
-            {format(startOfWeek(currentWeek, { weekStartsOn: 1 }), 'dd MMM', { locale: ptBR })} - {' '}
-            {format(endOfWeek(currentWeek, { weekStartsOn: 1 }), 'dd MMM yyyy', { locale: ptBR })}
-          </CardTitle>
-        </CardHeader>
-      </Card>
-
-      {/* Week Grid */}
-      <div className="grid grid-cols-7 gap-4">
-        {weekDays.map((day, index) => {
-          const daySchedules = getSchedulesForDay(day);
-          const isToday = isSameDay(day, new Date());
-          
-          return (
-            <Card key={index} className={isToday ? 'ring-2 ring-primary' : ''}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-center">
-                  {format(day, 'EEE', { locale: ptBR })}
-                </CardTitle>
-                <p className="text-xs text-center text-muted-foreground">
-                  {format(day, 'dd/MM')}
-                </p>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-2">
-                  {daySchedules.map(schedule => {
-                    const statusBadge = getStatusBadge(schedule.status);
-                    return (
-                      <div key={schedule.id} className="p-2 border rounded-lg text-xs">
-                        <div className="flex items-center space-x-1 mb-1">
-                          <Avatar className="h-6 w-6">
-                            <AvatarFallback className="text-xs">
-                              {schedule.employee.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="font-medium truncate">{schedule.employee.name}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">
-                            {schedule.startTime} - {schedule.endTime}
-                          </span>
-                          <Badge variant={statusBadge.variant} className="text-xs">
-                            {statusBadge.label}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center mt-1">
-                          <Building className="h-3 w-3 mr-1" />
-                          <span className="text-muted-foreground truncate">{schedule.branch.name}</span>
-                        </div>
-                        <div className="flex space-x-1 mt-2">
-                          <Button variant="ghost" size="sm" className="h-6 p-1">
-                            <Eye className="h-3 w-3" />
-                          </Button>
-                          <Button variant="ghost" size="sm" className="h-6 p-1">
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-6 p-1 text-destructive"
-                            onClick={() => {
-                              setScheduleToDelete(schedule);
-                              setShowDeleteModal(true);
-                            }}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {daySchedules.length === 0 && (
-                    <p className="text-xs text-muted-foreground text-center py-4">
-                      Sem escalas
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Create Schedule Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <Card className="w-full max-w-md mx-4">
-            <CardHeader>
-              <CardTitle>Nova Escala</CardTitle>
-              <CardDescription>Criar uma nova escala para funcionário</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Select value={newSchedule.employeeId} onValueChange={(value) => 
-                setNewSchedule(prev => ({ ...prev, employeeId: value }))
-              }>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Funcionário
+              </label>
+              <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecionar funcionário" />
+                  <SelectValue placeholder="Todos os funcionários" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="all">Todos os funcionários</SelectItem>
                   {employees.map(emp => (
                     <SelectItem key={emp.id} value={emp.id}>
                       {emp.name} - {emp.position}
@@ -468,14 +373,19 @@ export default function EmployeeSchedulePage() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
 
-              <Select value={newSchedule.branchId} onValueChange={(value) => 
-                setNewSchedule(prev => ({ ...prev, branchId: value }))
-              }>
+            <div className="space-y-2">
+              <label className="text-sm font-medium flex items-center gap-2">
+                <Building className="h-4 w-4" />
+                Filial
+              </label>
+              <Select value={selectedBranch} onValueChange={setSelectedBranch}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecionar filial" />
+                  <SelectValue placeholder="Todas as filiais" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="all">Todas as filiais</SelectItem>
                   {branches.map(branch => (
                     <SelectItem key={branch.id} value={branch.id}>
                       {branch.name}
@@ -483,105 +393,60 @@ export default function EmployeeSchedulePage() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
 
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start text-left">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {format(newSchedule.date, 'dd/MM/yyyy', { locale: ptBR })}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={newSchedule.date}
-                    onSelect={(date) => date && setNewSchedule(prev => ({ ...prev, date }))}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-
-              <div className="grid grid-cols-2 gap-2">
-                <Input
-                  type="time"
-                  value={newSchedule.startTime}
-                  onChange={(e) => setNewSchedule(prev => ({ ...prev, startTime: e.target.value }))}
-                />
-                <Input
-                  type="time"
-                  value={newSchedule.endTime}
-                  onChange={(e) => setNewSchedule(prev => ({ ...prev, endTime: e.target.value }))}
-                />
+            <div className="space-y-2">
+              <label className="text-sm font-medium flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                Status
+              </label>
+              <div className="flex gap-2 flex-wrap">
+                <Badge variant="secondary">Total: {schedules.length}</Badge>
+                <Badge variant="default">
+                  Confirmadas: {schedules.filter(s => s.status === 'CONFIRMED').length}
+                </Badge>
+                <Badge variant="outline">
+                  Agendadas: {schedules.filter(s => s.status === 'SCHEDULED').length}
+                </Badge>
               </div>
-
-              <Select value={newSchedule.shiftType} onValueChange={(value: any) => 
-                setNewSchedule(prev => ({ ...prev, shiftType: value }))
-              }>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="REGULAR">Regular</SelectItem>
-                  <SelectItem value="OVERTIME">Hora Extra</SelectItem>
-                  <SelectItem value="HOLIDAY">Feriado</SelectItem>
-                  <SelectItem value="WEEKEND">Fim de Semana</SelectItem>
-                  <SelectItem value="NIGHT">Noturno</SelectItem>
-                  <SelectItem value="FLEXIBLE">Flexível</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Input
-                placeholder="Observações (opcional)"
-                value={newSchedule.notes}
-                onChange={(e) => setNewSchedule(prev => ({ ...prev, notes: e.target.value }))}
-              />
-            </CardContent>
-            <div className="flex justify-end space-x-2 p-6 pt-0">
-              <Button variant="outline" onClick={() => setShowCreateModal(false)} disabled={isCreating}>
-                Cancelar
-              </Button>
-              <Button onClick={handleCreateSchedule} disabled={isCreating}>
-                {isCreating ? 'Criando...' : 'Criar Escala'}
-              </Button>
             </div>
-          </Card>
-        </div>
-      )}
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && scheduleToDelete && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <Card className="w-full max-w-md mx-4">
-            <CardHeader>
-              <CardTitle className="flex items-center text-destructive">
-                <AlertTriangle className="mr-2 h-5 w-5" />
-                Confirmar Exclusão
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Tem certeza que deseja excluir a escala de{' '}
-                <span className="font-medium">{scheduleToDelete.employee.name}</span> para{' '}
-                <span className="font-medium">{format(new Date(scheduleToDelete.date), 'dd/MM/yyyy')}</span>?
-              </p>
-            </CardContent>
-            <div className="flex justify-end space-x-2 p-6 pt-0">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  setScheduleToDelete(null);
-                }}
-                disabled={isDeleting}
-              >
-                Cancelar
-              </Button>
-              <Button variant="destructive" onClick={handleDeleteSchedule} disabled={isDeleting}>
-                {isDeleting ? 'Excluindo...' : 'Excluir'}
-              </Button>
-            </div>
-          </Card>
-        </div>
+      {/* Debug Information */}
+      {/* <DebugSchedule schedules={schedules} /> */}
+
+      {/* Calendar */}
+      <Card>
+        <CardContent className="p-6">
+          <ScheduleCalendar
+            schedules={schedules}
+            employees={employees}
+            branches={branches}
+            onDateClick={handleDateClick}
+            onEventClick={handleEventClick}
+            onEventDrop={handleEventDrop}
+            view={viewMode}
+            onViewChange={setViewMode}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Schedule Modal */}
+      {showScheduleModal && (
+        <ScheduleModal
+          isOpen={showScheduleModal}
+          onClose={() => setShowScheduleModal(false)}
+          onSave={handleModalSubmit}
+          employees={employees}
+          branches={branches}
+          selectedDate={selectedDate || undefined}
+          schedule={selectedSchedule}
+          daySchedules={selectedDate ? getDaySchedules(selectedDate) : []}
+          onDeleteDate={handleDeleteDate}
+          onDeleteSchedule={handleDeleteSchedule}
+        />
       )}
     </div>
   );
