@@ -346,7 +346,7 @@ export function Sidebar() {
 
   const handleLogout = async () => {
     logout();
-    router.push('/login');
+    router.push('/pt-BR/login');
   };
 
   const isActive = (href: string) => {

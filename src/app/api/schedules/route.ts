@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
 
     // Verificar permissões granulares - módulo employees, ação create
     const permissions = user.permissions as any;
-    const hasPermission = user.role === 'admin' || 
+    const hasPermission = user.role === 'ADMIN' || 
       permissions?.employees?.create ||
       true; // Temporário: permitir todos usuários autenticados
     

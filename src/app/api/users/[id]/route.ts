@@ -92,7 +92,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         name: userData.name || userExists.name,
         email: userData.email?.toLowerCase() || userExists.email,
         phone: userData.phone || userExists.phone,
-        role: userData.role || userExists.role,
+        role: userData.role ? userData.role.toUpperCase() : userExists.role,
         employeeId: userData.employeeId || userExists.employeeId,
         isActive: userData.isActive !== undefined ? userData.isActive : userExists.isActive,
         permissions: userData.permissions || userExists.permissions,

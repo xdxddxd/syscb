@@ -1,36 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
+import { verifyToken } from '@/lib/auth';
+import { PrismaClient } from '@prisma/client';
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'your-secret-key'
-);
+const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
   try {
     console.log('Verify API: Starting token verification...');
     
-    const token = request.cookies.get('auth-token')?.value;
-    console.log('Verify API: Token found:', !!token);
-    console.log('Verify API: Token length:', token?.length || 0);
+    const user = await verifyToken(request);
+    console.log('Verify API: Token verified:', !!user);
 
-    if (!token) {
-      console.log('Verify API: No token found in cookies');
+    if (!user) {
+      console.log('Verify API: No valid token found');
       return NextResponse.json(
-        { error: 'Token não encontrado' },
+        { error: 'Token não encontrado ou inválido' },
         { status: 401 }
       );
     }
 
-    console.log('Verify API: Attempting to verify token...');
-    const { payload: decoded } = await jwtVerify(token, JWT_SECRET);
-    console.log('Verify API: Token verified successfully, payload:', decoded);
+    // Buscar dados completos do usuário
+    const userData = await prisma.user.findUnique({
+      where: { id: user.userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        permissions: true,
+        branchId: true,
+        branch: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
+      }
+    });
+
+    if (!userData) {
+      console.log('Verify API: User not found in database');
+      return NextResponse.json(
+        { error: 'Usuário não encontrado' },
+        { status: 401 }
+      );
+    }
+
+    console.log('Verify API: User data found:', userData.name);
     
     return NextResponse.json({
-      user: {
-        userId: decoded.userId,
-        email: decoded.email,
-        role: decoded.role
-      },
+      user: userData,
       authenticated: true
     });
   } catch (error) {
@@ -39,5 +58,7 @@ export async function GET(request: NextRequest) {
       { error: 'Token inválido' },
       { status: 401 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }

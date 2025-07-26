@@ -94,7 +94,7 @@ export async function PUT(
 
     // Verificar permissões granulares
     const permissions = user.permissions as any;
-    const hasPermission = user.role === 'admin' || 
+    const hasPermission = user.role === 'ADMIN' || 
       permissions?.employees?.update ||
       true; // Temporário: permitir todos usuários autenticados
     
@@ -199,7 +199,7 @@ export async function DELETE(
 
     // Verificar permissões granulares
     const permissions = user.permissions as any;
-    const hasPermission = user.role === 'admin' || 
+    const hasPermission = user.role === 'ADMIN' || 
       permissions?.employees?.delete ||
       true; // Temporário: permitir todos usuários autenticados
     

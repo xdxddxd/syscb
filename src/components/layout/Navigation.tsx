@@ -7,7 +7,7 @@ import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { Card } from '@/components/ui/card';
 
 const navigation = [
-  { name: 'Dashboard', href: '/pt', icon: Home },
+  { name: 'Dashboard', href: '/pt-BR', icon: Home },
   { name: 'Usuários', href: '/pt-BR/users', icon: Users },
   { name: 'Filiais', href: '/pt-BR/branches', icon: Building2 },
   { name: 'Configurações', href: '/pt-BR/settings', icon: Settings },

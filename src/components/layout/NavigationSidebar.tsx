@@ -37,7 +37,7 @@ interface NavigationItem {
 }
 
 const navigation: NavigationItem[] = [
-  { name: 'Dashboard', href: '/pt', icon: Home, description: 'Visão geral do sistema' },
+  { name: 'Dashboard', href: '/pt-BR', icon: Home, description: 'Visão geral do sistema' },
   { name: 'Usuários', href: '/pt-BR/users', icon: Users, description: 'Gestão de usuários' },
   { name: 'Filiais', href: '/pt-BR/branches', icon: Building2, description: 'Gestão de filiais' },
   { name: 'Imóveis', href: '/pt-BR/properties', icon: Building2, description: 'Gestão de propriedades' },

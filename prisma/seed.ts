@@ -13,8 +13,7 @@ async function main() {
       name: 'Administrador do Sistema',
       email: 'admin@sistema.com',
       phone: '(11) 99999-9999',
-      role: 'admin',
-      employeeId: 'emp-admin',
+      role: 'ADMIN',
       isActive: true,
       permissions: {
         dashboard: { create: true, read: true, update: true, delete: true },
@@ -41,8 +40,7 @@ async function main() {
       name: 'Gerente de Vendas',
       email: 'gerente@sistema.com',
       phone: '(11) 98888-8888',
-      role: 'manager',
-      employeeId: 'emp-1',
+      role: 'MANAGER',
       isActive: true,
       permissions: {
         dashboard: { create: false, read: true, update: false, delete: false },
@@ -69,8 +67,7 @@ async function main() {
       name: 'Usuário Padrão',
       email: 'usuario@sistema.com',
       phone: '(11) 97777-7777',
-      role: 'user',
-      employeeId: 'emp-2',
+      role: 'USER',
       isActive: true,
       permissions: {
         dashboard: { create: false, read: true, update: false, delete: false },

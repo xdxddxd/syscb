@@ -63,7 +63,7 @@ export default function EditEmployeePage({ params }: { params: { id: string } })
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push('/login');
+      router.push('/pt-BR/login');
     }
   }, [user, isLoading, router]);
 

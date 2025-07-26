@@ -129,11 +129,28 @@ export function KanbanBoard({
         return leads.filter(lead => lead.status === status);
     };
 
-    const calculateConversionRate = (fromStatus: string, toStatus: string) => {
-        const fromCount = stats[fromStatus] || 0;
-        const toCount = stats[toStatus] || 0;
-        if (fromCount === 0) return 0;
-        return Math.round((toCount / fromCount) * 100);
+    const calculateConversionRate = () => {
+        const closedCount = stats['CLOSED'] || 0;
+        const lostCount = stats['LOST'] || 0;
+        const totalFinalized = closedCount + lostCount;
+        
+        if (totalFinalized === 0) return 0;
+        return Math.round((closedCount / totalFinalized) * 100);
+    };
+
+    const calculateLossRate = () => {
+        const closedCount = stats['CLOSED'] || 0;
+        const lostCount = stats['LOST'] || 0;
+        const totalFinalized = closedCount + lostCount;
+        
+        if (totalFinalized === 0) return 0;
+        return Math.round((lostCount / totalFinalized) * 100);
+    };
+
+    const getTotalFinalized = () => {
+        const closedCount = stats['CLOSED'] || 0;
+        const lostCount = stats['LOST'] || 0;
+        return closedCount + lostCount;
     };
 
     const getTotalValue = (status: string) => {
@@ -162,13 +179,16 @@ export function KanbanBoard({
             `}</style>
             
             {/* Header com métricas de conversão */}
-            <div className="mb-6 grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="mb-6 grid grid-cols-2 md:grid-cols-6 gap-4">
                 <Card className="p-4">
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm text-muted-foreground">Taxa Conversão</p>
                             <p className="text-lg font-bold text-green-600">
-                                {calculateConversionRate('NEW', 'CLOSED')}%
+                                {calculateConversionRate()}%
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                                {stats['CLOSED'] || 0} de {getTotalFinalized()} finalizados
                             </p>
                         </div>
                         <TrendingUp className="h-6 w-6 text-green-600" />
@@ -178,9 +198,27 @@ export function KanbanBoard({
                 <Card className="p-4">
                     <div className="flex items-center justify-between">
                         <div>
+                            <p className="text-sm text-muted-foreground">Taxa Perda</p>
+                            <p className="text-lg font-bold text-red-600">
+                                {calculateLossRate()}%
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                                {stats['LOST'] || 0} de {getTotalFinalized()} finalizados
+                            </p>
+                        </div>
+                        <TrendingDown className="h-6 w-6 text-red-600" />
+                    </div>
+                </Card>
+
+                <Card className="p-4">
+                    <div className="flex items-center justify-between">
+                        <div>
                             <p className="text-sm text-muted-foreground">Valor Pipeline</p>
                             <p className="text-lg font-bold">
                                 R$ {getTotalValue('QUALIFIED').toLocaleString('pt-BR')}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                                {stats['QUALIFIED'] || 0} leads qualificados
                             </p>
                         </div>
                         <TrendingUp className="h-6 w-6 text-blue-600" />
@@ -194,6 +232,9 @@ export function KanbanBoard({
                             <p className="text-lg font-bold text-green-600">
                                 R$ {getTotalValue('CLOSED').toLocaleString('pt-BR')}
                             </p>
+                            <p className="text-xs text-muted-foreground">
+                                {stats['CLOSED'] || 0} vendas fechadas
+                            </p>
                         </div>
                         <TrendingUp className="h-6 w-6 text-green-600" />
                     </div>
@@ -206,6 +247,9 @@ export function KanbanBoard({
                             <p className="text-lg font-bold text-orange-600">
                                 {leads.filter(lead => lead.budget && lead.budget > 500000).length}
                             </p>
+                            <p className="text-xs text-muted-foreground">
+                                Orçamento &gt; R$ 500k
+                            </p>
                         </div>
                         <TrendingUp className="h-6 w-6 text-orange-600" />
                     </div>
@@ -214,12 +258,15 @@ export function KanbanBoard({
                 <Card className="p-4">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-muted-foreground">Taxa Perda</p>
-                            <p className="text-lg font-bold text-red-600">
-                                {calculateConversionRate('NEW', 'LOST')}%
+                            <p className="text-sm text-muted-foreground">Total Leads</p>
+                            <p className="text-lg font-bold text-blue-600">
+                                {leads.length}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                                {leads.filter(l => l.status !== 'CLOSED' && l.status !== 'LOST').length} ativos
                             </p>
                         </div>
-                        <TrendingDown className="h-6 w-6 text-red-600" />
+                        <Minus className="h-6 w-6 text-blue-600" />
                     </div>
                 </Card>
             </div>

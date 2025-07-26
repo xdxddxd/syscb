@@ -30,7 +30,7 @@ export default function BranchesPage() {
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push('/login');
+      router.push('/pt-BR/login');
     }
   }, [user, isLoading, router]);
 

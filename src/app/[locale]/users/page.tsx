@@ -95,7 +95,7 @@ export default function UsersPage() {
   // Check authentication
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/login');
+      router.push('/pt-BR/login');
     }
   }, [user, authLoading, router]);
 

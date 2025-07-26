@@ -6,12 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Mail, LogIn, Loader2 } from 'lucide-react';
+import { useAuthStore } from '@/stores';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { setUser } = useAuthStore();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,11 +38,11 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        // Store user data in localStorage for client-side access
-        localStorage.setItem('user', JSON.stringify(data.user));
+        // Atualizar o AuthStore com os dados do usuário
+        setUser(data.user);
         
-        // Redirect to dashboard or users page
-        router.push('/users');
+        // Redirecionar para o dashboard
+        router.push('/pt-BR/');
       } else {
         setError(data.error || 'Erro ao fazer login');
       }

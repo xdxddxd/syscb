@@ -30,28 +30,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const checkAuth = async () => {
       try {
         console.log('AuthContext: Checking authentication...');
-        const response = await fetch('/api/auth/verify');
+        const response = await fetch('/api/auth/verify', {
+          credentials: 'include'
+        });
         console.log('AuthContext: Verify response status:', response.status);
         
         if (response.ok) {
           const data = await response.json();
           console.log('AuthContext: Verify successful, data:', data);
           
-          const storedUser = localStorage.getItem('user');
-          console.log('AuthContext: Stored user:', storedUser ? 'found' : 'not found');
-          
-          if (storedUser) {
-            setUser(JSON.parse(storedUser));
+          if (data.authenticated && data.user) {
+            setUser({
+              id: data.user.id,
+              name: data.user.name,
+              email: data.user.email,
+              role: data.user.role,
+              permissions: data.user.permissions || {}
+            });
           }
         } else {
           console.log('AuthContext: Verify failed, clearing user data');
-          // Clear invalid data
-          localStorage.removeItem('user');
           setUser(null);
         }
       } catch (error) {
         console.error('Auth check failed:', error);
-        localStorage.removeItem('user');
         setUser(null);
       } finally {
         setLoading(false);
@@ -63,18 +65,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = (userData: User) => {
     setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+    // Não usar localStorage, confiar apenas no cookie JWT
   };
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch('/api/auth/logout', { 
+        method: 'POST',
+        credentials: 'include'
+      });
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
       setUser(null);
-      localStorage.removeItem('user');
-      router.push('/login');
+      router.push('/pt-BR/login');
     }
   };
 

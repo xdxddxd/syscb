@@ -23,7 +23,7 @@ export function ProtectedRoute({
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/login');
+      router.push('/pt-BR/login');
     }
   }, [user, loading, router]);
 

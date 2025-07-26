@@ -122,26 +122,12 @@ export default function HomePage() {
             </p>
             
             <div className="flex items-center justify-center pt-4">
-              <button 
-                onClick={() => {
-                  // Login como demo
-                  useAuthStore.getState().setUser({
-                    id: 'demo-user',
-                    name: 'Usuário Demo',
-                    email: 'demo@casabranca.com',
-                    role: UserRole.ADMIN,
-                    isActive: true,
-                    branchId: 'branch-1',
-                    permissions: [],
-                    phone: '(11) 99999-9999',
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                  });
-                }}
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-lg hover:scale-105"
+              <a
+                href="/pt-BR/login"
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-lg hover:scale-105 text-center block"
               >
-                Entrar como Demo
-              </button>
+                Fazer Login
+              </a>
             </div>
           </div>
         </div>

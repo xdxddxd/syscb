@@ -202,8 +202,11 @@ enum LeadStatus {
 
 enum LeadSource {
   WEBSITE
-  SOCIAL
+  PHONE
+  EMAIL
   REFERRAL
+  SOCIAL
+  WALK_IN
   ADVERTISING
   OTHER
 }

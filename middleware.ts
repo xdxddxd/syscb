@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 
-const publicPaths = ['/login', '/api/auth/login', '/api/auth/logout', '/test-auth'];
+const publicPaths = ['/pt-BR/login', '/api/auth/login', '/api/auth/logout', '/test-auth'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -25,7 +25,7 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get('auth-token')?.value;
 
   if (!token) {
-    return NextResponse.redirect(new URL('/login', request.url));
+    return NextResponse.redirect(new URL('/pt-BR/login', request.url));
   }
 
   try {
@@ -45,7 +45,7 @@ export async function middleware(request: NextRequest) {
     console.error('Token verification failed:', error);
     
     // Clear invalid token
-    const response = NextResponse.redirect(new URL('/login', request.url));
+    const response = NextResponse.redirect(new URL('/pt-BR/login', request.url));
     response.cookies.set('auth-token', '', {
       maxAge: 0,
       path: '/'

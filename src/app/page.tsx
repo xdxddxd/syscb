@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
 
 export default function HomePage() {
-  redirect('/pt-br/dashboard');
+  redirect('/pt-BR/dashboard');
 }
