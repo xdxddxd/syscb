@@ -33,7 +33,7 @@ async function verifyToken(request: NextRequest) {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await verifyToken(request);
@@ -41,6 +41,7 @@ export async function GET(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
+    const params = await context.params;
     const lead = await prisma.lead.findUnique({
       where: { id: params.id },
       include: {
@@ -88,7 +89,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await verifyToken(request);
@@ -96,6 +97,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
+    const params = await context.params;
     const data = await request.json();
     const {
       name,
@@ -218,7 +220,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await verifyToken(request);
@@ -226,6 +228,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
+    const params = await context.params;
     // Verificar se o lead existe
     const existingLead = await prisma.lead.findUnique({
       where: { id: params.id }

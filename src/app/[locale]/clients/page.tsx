@@ -61,6 +61,12 @@ interface Employee {
   name: string;
   position: string;
   department: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
 }
 
 interface Property {
@@ -154,6 +160,8 @@ export default function ClientsPage() {
       const url = editingLead ? `/api/leads/${editingLead.id}` : '/api/leads';
       const method = editingLead ? 'PUT' : 'POST';
 
+      console.log('Enviando dados do lead:', leadData);
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -163,16 +171,21 @@ export default function ClientsPage() {
         body: JSON.stringify(leadData)
       });
 
+      const responseData = await response.json();
+      
       if (!response.ok) {
-        throw new Error('Erro ao salvar lead');
+        console.error('Erro da API:', responseData);
+        throw new Error(responseData.error || 'Erro ao salvar lead');
       }
 
+      console.log('Lead salvo com sucesso:', responseData);
       await loadData();
       setShowLeadModal(false);
       setEditingLead(null);
     } catch (error) {
       console.error('Erro ao salvar lead:', error);
-      alert('Erro ao salvar lead');
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      alert(`Erro ao salvar lead: ${errorMessage}`);
     }
   };
 
@@ -376,9 +389,9 @@ export default function ClientsPage() {
                 <SelectContent>
                   <SelectItem value="all">Todos os consultores</SelectItem>
                   {employees
-                    .filter(employee => employee.id && employee.id.trim() !== '')
+                    .filter(employee => employee.user && employee.user.id && employee.user.id.trim() !== '' && employee.name)
                     .map(employee => (
-                      <SelectItem key={employee.id} value={employee.id}>
+                      <SelectItem key={employee.user!.id} value={employee.user!.id}>
                         {employee.name}
                       </SelectItem>
                     ))}

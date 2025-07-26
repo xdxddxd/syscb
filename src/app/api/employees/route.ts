@@ -83,6 +83,9 @@ export async function GET(request: NextRequest) {
           },
           subordinates: {
             select: { id: true, name: true, position: true }
+          },
+          user: {
+            select: { id: true, name: true, email: true, role: true }
           }
         },
         orderBy: { createdAt: 'desc' },

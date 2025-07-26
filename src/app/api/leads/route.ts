@@ -146,6 +146,8 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await request.json();
+    console.log('Dados recebidos para criar lead:', data);
+    
     const {
       name,
       email,
@@ -169,6 +171,7 @@ export async function POST(request: NextRequest) {
 
     // Usar o agentId fornecido ou o usuário atual como agent
     const finalAgentId = agentId || user.id;
+    console.log('agentId recebido:', agentId, 'user.id:', user.id, 'finalAgentId:', finalAgentId);
 
     // Verificar se o agent existe
     const agent = await prisma.user.findUnique({
@@ -176,9 +179,29 @@ export async function POST(request: NextRequest) {
       include: { branch: true }
     });
 
+    console.log('Agent encontrado:', agent ? { id: agent.id, name: agent.name, email: agent.email } : 'null');
+
     if (!agent) {
       return NextResponse.json(
-        { error: 'Agente não encontrado' },
+        { error: `Agente não encontrado com ID: ${finalAgentId}` },
+        { status: 400 }
+      );
+    }
+
+    // Garantir que temos um branchId válido
+    let branchId = agent.branchId;
+    if (!branchId && agent.branch) {
+      branchId = agent.branch.id;
+    }
+    if (!branchId) {
+      // Buscar a primeira filial disponível se o agente não tiver uma
+      const firstBranch = await prisma.branch.findFirst();
+      branchId = firstBranch?.id || '';
+    }
+
+    if (!branchId) {
+      return NextResponse.json(
+        { error: 'Nenhuma filial encontrada' },
         { status: 400 }
       );
     }
@@ -209,7 +232,7 @@ export async function POST(request: NextRequest) {
         notes,
         agentId: finalAgentId,
         propertyId: propertyId || null,
-        branchId: agent.branchId || agent.branch?.id || '',
+        branchId: branchId,
         lastContactAt: new Date()
       },
       include: {
@@ -239,6 +262,7 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    console.log('Lead criado com sucesso:', lead.id);
     return NextResponse.json(lead, { status: 201 });
 
   } catch (error) {

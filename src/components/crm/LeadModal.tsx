@@ -42,6 +42,12 @@ interface Employee {
   name: string;
   position: string;
   department: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
 }
 
 interface Property {
@@ -160,6 +166,8 @@ export function LeadModal({
       newErrors.interest = 'Interesse ou propriedade deve ser informado';
     }
 
+    console.log('Validação do formulário:', { formData, errors: newErrors });
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -171,14 +179,17 @@ export function LeadModal({
 
     const saveData = {
       ...formData,
-      budget: formData.budget || undefined
+      budget: formData.budget || undefined,
+      propertyId: formData.propertyId === 'none' || formData.propertyId === '' ? undefined : formData.propertyId,
+      agentId: formData.agentId === 'none' || formData.agentId === '' ? undefined : formData.agentId
     };
 
+    console.log('Dados a serem salvos:', saveData);
     onSave(saveData);
   };
 
   const selectedProperty = properties.find(p => p.id === formData.propertyId);
-  const selectedAgent = employees.find(e => e.id === formData.agentId);
+  const selectedAgent = employees.find(e => e.user?.id === formData.agentId);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -323,17 +334,19 @@ export function LeadModal({
                       <SelectValue placeholder="Selecione uma propriedade (opcional)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Nenhuma propriedade específica</SelectItem>
-                      {properties.map(property => (
-                        <SelectItem key={property.id} value={property.id}>
-                          <div className="flex items-center justify-between w-full">
-                            <span className="truncate">{property.title}</span>
-                            <span className="text-xs text-muted-foreground ml-2">
-                              R$ {property.price.toLocaleString('pt-BR')}
-                            </span>
-                          </div>
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="none">Nenhuma propriedade específica</SelectItem>
+                      {properties
+                        .filter(property => property.id && property.id.trim() !== '' && property.title)
+                        .map(property => (
+                          <SelectItem key={property.id} value={property.id}>
+                            <div className="flex items-center justify-between w-full">
+                              <span className="truncate">{property.title}</span>
+                              <span className="text-xs text-muted-foreground ml-2">
+                                R$ {property.price.toLocaleString('pt-BR')}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -360,18 +373,20 @@ export function LeadModal({
                       <SelectValue placeholder="Selecione um consultor" />
                     </SelectTrigger>
                     <SelectContent>
-                      {employees.map(employee => (
-                        <SelectItem key={employee.id} value={employee.id}>
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-6 w-6">
-                              <AvatarFallback className="text-xs">
-                                {employee.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span>{employee.name} - {employee.position}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
+                      {employees
+                        .filter(employee => employee.user && employee.user.id && employee.user.id.trim() !== '' && employee.name)
+                        .map(employee => (
+                          <SelectItem key={employee.user!.id} value={employee.user!.id}>
+                            <div className="flex items-center gap-2">
+                              <Avatar className="h-6 w-6">
+                                <AvatarFallback className="text-xs">
+                                  {employee.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span>{employee.name} - {employee.position}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>
