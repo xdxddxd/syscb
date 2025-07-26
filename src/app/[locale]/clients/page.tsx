@@ -162,6 +162,46 @@ export default function ClientsPage() {
 
       console.log('Enviando dados do lead:', leadData);
 
+      // Optimistic update - atualizar UI imediatamente
+      if (editingLead) {
+        // Atualizar lead existente
+        setLeads(prevLeads => 
+          prevLeads.map(lead => 
+            lead.id === editingLead.id 
+              ? { ...lead, ...leadData, agent: lead.agent, property: lead.property, branch: lead.branch }
+              : lead
+          )
+        );
+      } else {
+        // Adicionar novo lead temporário
+        const tempLead = {
+          id: `temp-${Date.now()}`,
+          ...leadData,
+          createdAt: new Date().toISOString(),
+          agent: employees.find(e => e.user?.id === leadData.agentId) 
+            ? { 
+                id: leadData.agentId || '', 
+                name: employees.find(e => e.user?.id === leadData.agentId)?.name || '', 
+                email: employees.find(e => e.user?.id === leadData.agentId)?.user?.email || '' 
+              }
+            : { id: '', name: 'Sem consultor', email: '' },
+          property: properties.find(p => p.id === leadData.propertyId) || undefined,
+          branch: { id: '', name: 'Matriz' }
+        };
+        
+        setLeads(prevLeads => [tempLead, ...prevLeads]);
+        
+        // Atualizar estatísticas localmente
+        setStats(prevStats => ({
+          ...prevStats,
+          [leadData.status]: (prevStats[leadData.status] || 0) + 1
+        }));
+      }
+
+      // Fechar modal imediatamente
+      setShowLeadModal(false);
+      setEditingLead(null);
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -175,13 +215,30 @@ export default function ClientsPage() {
       
       if (!response.ok) {
         console.error('Erro da API:', responseData);
+        // Reverter optimistic update em caso de erro
+        if (editingLead) {
+          await loadData(); // Recarregar apenas em caso de erro
+        } else {
+          setLeads(prevLeads => prevLeads.filter(lead => !lead.id.startsWith('temp-')));
+          setStats(prevStats => ({
+            ...prevStats,
+            [leadData.status]: Math.max(0, (prevStats[leadData.status] || 0) - 1)
+          }));
+        }
         throw new Error(responseData.error || 'Erro ao salvar lead');
       }
 
       console.log('Lead salvo com sucesso:', responseData);
-      await loadData();
-      setShowLeadModal(false);
-      setEditingLead(null);
+      
+      // Atualizar com dados reais do servidor apenas se necessário
+      if (!editingLead) {
+        setLeads(prevLeads => 
+          prevLeads.map(lead => 
+            lead.id.startsWith('temp-') ? responseData : lead
+          )
+        );
+      }
+
     } catch (error) {
       console.error('Erro ao salvar lead:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
@@ -195,16 +252,33 @@ export default function ClientsPage() {
     }
 
     try {
+      // Optimistic update - remover da UI imediatamente
+      const leadToDelete = leads.find(lead => lead.id === leadId);
+      if (leadToDelete) {
+        setLeads(prevLeads => prevLeads.filter(lead => lead.id !== leadId));
+        setStats(prevStats => ({
+          ...prevStats,
+          [leadToDelete.status]: Math.max(0, (prevStats[leadToDelete.status] || 0) - 1)
+        }));
+      }
+
       const response = await fetch(`/api/leads/${leadId}`, {
         method: 'DELETE',
         credentials: 'include'
       });
 
       if (!response.ok) {
+        // Reverter optimistic update em caso de erro
+        if (leadToDelete) {
+          setLeads(prevLeads => [...prevLeads, leadToDelete]);
+          setStats(prevStats => ({
+            ...prevStats,
+            [leadToDelete.status]: (prevStats[leadToDelete.status] || 0) + 1
+          }));
+        }
         throw new Error('Erro ao excluir lead');
       }
 
-      await loadData();
     } catch (error) {
       console.error('Erro ao excluir lead:', error);
       alert('Erro ao excluir lead');
@@ -215,6 +289,22 @@ export default function ClientsPage() {
     try {
       const lead = leads.find(l => l.id === leadId);
       if (!lead) return;
+
+      const oldStatus = lead.status;
+
+      // Optimistic update - atualizar UI imediatamente
+      setLeads(prevLeads => 
+        prevLeads.map(l => 
+          l.id === leadId ? { ...l, status: newStatus } : l
+        )
+      );
+
+      // Atualizar estatísticas localmente
+      setStats(prevStats => ({
+        ...prevStats,
+        [oldStatus]: Math.max(0, (prevStats[oldStatus] || 0) - 1),
+        [newStatus]: (prevStats[newStatus] || 0) + 1
+      }));
 
       const response = await fetch(`/api/leads/${leadId}`, {
         method: 'PUT',
@@ -229,10 +319,22 @@ export default function ClientsPage() {
       });
 
       if (!response.ok) {
+        // Reverter optimistic update em caso de erro
+        setLeads(prevLeads => 
+          prevLeads.map(l => 
+            l.id === leadId ? { ...l, status: oldStatus } : l
+          )
+        );
+        
+        setStats(prevStats => ({
+          ...prevStats,
+          [oldStatus]: (prevStats[oldStatus] || 0) + 1,
+          [newStatus]: Math.max(0, (prevStats[newStatus] || 0) - 1)
+        }));
+        
         throw new Error('Erro ao atualizar status');
       }
 
-      await loadData();
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
       alert('Erro ao atualizar status');
